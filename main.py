@@ -22,6 +22,16 @@ intent.message_content = True
 # connect to discord
 client = discord.Client(intents=intent)
 
+
+def get_joke():
+    response = requests.get("https://api.chucknorris.io/jokes/random", timeout = 3)
+    try:  
+        joke = json.loads(response.text)['value']
+    except:
+        joke = "Why was 6 afraid of 7? Because 7,8,9."
+    return joke
+
+
 # trigger when bot ready to use
 @client.event
 async def on_ready():
@@ -38,6 +48,11 @@ async def on_message(message):
     # respond to hello message
     if message.content.startswith("$hello"):
         await message.channel.send("Hello!")
+        
+        # respond to joke request
+    if message.content.startswith("$joke"):
+        joke = get_joke()
+        await message.channel.send(joke)
  
  
 client.run(TOKEN)
