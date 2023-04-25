@@ -22,6 +22,14 @@ intent.message_content = True
 # connect to discord
 client = discord.Client(intents=intent)
 
+# sad words
+sad_words = ["sad", "depressed", "mad", "unhapy", "heartbroken", "miserable", "upset", "hurt", "hurts"]
+response_to_sad_words = [
+    "Cheer up!", 
+    "You can do it!", 
+    "There is no need to be sad"
+]
+
 
 def get_joke():
     response = requests.get("https://api.chucknorris.io/jokes/random", timeout = 3)
@@ -49,10 +57,14 @@ async def on_message(message):
     if message.content.startswith("$hello"):
         await message.channel.send("Hello!")
         
-        # respond to joke request
+    # respond to joke request
     if message.content.startswith("$joke"):
         joke = get_joke()
         await message.channel.send(joke)
+    
+    # cheer up sad person
+    if any(word in message.content for word in sad_words):
+        await message.channel.send(random.choice(response_to_sad_words))
  
  
 client.run(TOKEN)
