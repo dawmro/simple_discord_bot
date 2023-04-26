@@ -9,6 +9,16 @@ import json
 
 import random
 
+import logging
+import os
+
+# create directory to store logs
+if not os.path.exists("logs"):
+  os.makedirs("logs")
+
+# define log file name
+handler = logging.FileHandler(filename='logs\discord.log', encoding='utf-8', mode='w')
+
 # load variables from .env file
 dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -67,4 +77,4 @@ async def on_message(message):
         await message.channel.send(random.choice(response_to_sad_words))
  
  
-client.run(TOKEN)
+client.run(TOKEN, log_handler=handler, log_level=logging.DEBUG)
