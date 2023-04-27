@@ -1,4 +1,5 @@
 import discord
+from discord.ext import commands
 
 import os
 from dotenv import load_dotenv
@@ -14,6 +15,8 @@ import logging.handlers
 import os
 
 import asyncio
+
+description = "Simpe Discord Boot [WIP]"
 
 # create directory to store logs
 if not os.path.exists("logs"):
@@ -41,12 +44,12 @@ load_dotenv(dotenv_path=dotenv_path)
 TOKEN = os.getenv('TOKEN')
 
 # enable message intent
-intent = discord.Intents.default()
-intent.members = True
-intent.message_content = True
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
 
 # connect to discord
-client = discord.Client(intents=intent)
+bot = commands.Bot(command_prefix='!', description=description, intents=intents)
 
 # sad words
 sad_words = ["sad", "depressed", "mad", "unhapy", "heartbroken", "miserable", "upset", "hurt", "hurts"]
@@ -67,16 +70,16 @@ def get_joke():
 
 
 # trigger when bot ready to use
-@client.event
+@bot.event
 async def on_ready():
-    print('Logged in as {0.user}'.format(client))
-
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    print('------')
 
 # trigger when message received 
-@client.event
+@bot.event
 async def on_message(message):
     # don't respond to own messages
-    if message.author == client.user:
+    if message.author == bot.user:
         return
     
     # respond to hello message
@@ -107,4 +110,4 @@ async def on_message(message):
         await msg.edit(content='GO!')
  
  
-client.run(TOKEN, log_handler=None)
+bot.run(TOKEN, log_handler=None)
