@@ -79,7 +79,7 @@ async def on_message(message):
     
     # respond to hello message
     if message.content.startswith("!hello"):
-        await message.channel.send("Hello!")
+        await message.channel.send(f"Hello {message.author}")
         
     # respond to joke request
     if message.content.startswith("!joke"):
