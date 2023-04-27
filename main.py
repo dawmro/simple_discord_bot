@@ -86,7 +86,6 @@ async def on_message(ctx):
     if any(word in ctx.content for word in sad_words):
         await ctx.channel.send(random.choice(response_to_sad_words))
         
-    
     # process bot commands
     await bot.process_commands(ctx)
     
@@ -100,6 +99,11 @@ async def hello(ctx, *args):
 async def joke(ctx, *args):
     joke = get_joke()
     await ctx.send(joke)
+    
+# delete message
+@bot.command()
+async def deleteme(ctx, *args):
+    await ctx.send('I will delete myself in 3 seconds...', delete_after=3.0)
 
 
 
