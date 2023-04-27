@@ -13,6 +13,8 @@ import logging
 import logging.handlers
 import os
 
+import asyncio
+
 # create directory to store logs
 if not os.path.exists("logs"):
   os.makedirs("logs")
@@ -93,6 +95,16 @@ async def on_message(message):
     # delete message
     if message.content.startswith('!deleteme'):
         await message.channel.send('I will delete myself in 3 seconds...', delete_after=3.0)
+    
+    # countdown from 3 to 0
+    if message.content.startswith('!countdown'):
+        msg = await message.channel.send('3')
+        await asyncio.sleep(1.0)
+        await msg.edit(content='2')
+        await asyncio.sleep(1.0)
+        await msg.edit(content='1')
+        await asyncio.sleep(1.0)
+        await msg.edit(content='GO!')
  
  
 client.run(TOKEN, log_handler=None)
