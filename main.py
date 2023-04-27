@@ -74,6 +74,21 @@ def get_joke():
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print('------')
+
+# trigger when message received     
+@bot.event
+async def on_message(ctx):
+    # don't respond to own messages
+    if ctx.author.id == bot.user.id:
+        return   
+        
+    # respond to sad words
+    if any(word in ctx.content for word in sad_words):
+        await ctx.channel.send(random.choice(response_to_sad_words))
+        
+    
+    # process bot commands
+    await bot.process_commands(ctx)
     
 # say hello
 @bot.command()
@@ -85,6 +100,9 @@ async def hello(ctx, *args):
 async def joke(ctx, *args):
     joke = get_joke()
     await ctx.send(joke)
+
+
+
 
 
 bot.run(TOKEN, log_handler=None)
