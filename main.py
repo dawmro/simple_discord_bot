@@ -104,9 +104,17 @@ async def joke(ctx, *args):
 @bot.command()
 async def deleteme(ctx, *args):
     await ctx.send('I will delete myself in 3 seconds...', delete_after=3.0)
-
-
-
+    
+# countdown from 3 to 0
+@bot.command()
+async def countdown(ctx, *args):
+    msg = await ctx.send('3')
+    await asyncio.sleep(1.0)
+    await msg.edit(content='2')
+    await asyncio.sleep(1.0)
+    await msg.edit(content='1')
+    await asyncio.sleep(1.0)
+    await msg.edit(content='GO!')
 
 
 bot.run(TOKEN, log_handler=None)
