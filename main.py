@@ -78,17 +78,21 @@ async def on_message(message):
         return
     
     # respond to hello message
-    if message.content.startswith("$hello"):
+    if message.content.startswith("!hello"):
         await message.channel.send("Hello!")
         
     # respond to joke request
-    if message.content.startswith("$joke"):
+    if message.content.startswith("!joke"):
         joke = get_joke()
         await message.channel.send(joke)
     
     # cheer up sad person
     if any(word in message.content for word in sad_words):
         await message.channel.send(random.choice(response_to_sad_words))
+    
+    # delete message
+    if message.content.startswith('!deleteme'):
+        await message.channel.send('I will delete myself in 3 seconds...', delete_after=3.0)
  
  
 client.run(TOKEN, log_handler=None)
