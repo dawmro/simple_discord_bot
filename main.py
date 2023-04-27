@@ -91,4 +91,4 @@ async def on_message(message):
         await message.channel.send(random.choice(response_to_sad_words))
  
  
-client.run(TOKEN, log_handler=None, log_level=logging.DEBUG)
+client.run(TOKEN, log_handler=None)
