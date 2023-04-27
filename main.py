@@ -80,7 +80,11 @@ async def on_ready():
 async def hello(ctx, *args):
     await ctx.send(f"Hello {ctx.author}")
 
-
+# tell joke
+@bot.command()
+async def joke(ctx, *args):
+    joke = get_joke()
+    await ctx.send(joke)
 
 
 bot.run(TOKEN, log_handler=None)
