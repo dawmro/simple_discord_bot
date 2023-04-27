@@ -74,40 +74,13 @@ def get_joke():
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print('------')
+    
+# say hello
+@bot.command()
+async def hello(ctx, *args):
+    await ctx.send(f"Hello {ctx.author}")
 
-# trigger when message received 
-@bot.event
-async def on_message(message):
-    # don't respond to own messages
-    if message.author == bot.user:
-        return
-    
-    # respond to hello message
-    if message.content.startswith("!hello"):
-        await message.channel.send(f"Hello {message.author}")
-        
-    # respond to joke request
-    if message.content.startswith("!joke"):
-        joke = get_joke()
-        await message.channel.send(joke)
-    
-    # cheer up sad person
-    if any(word in message.content for word in sad_words):
-        await message.channel.send(random.choice(response_to_sad_words))
-    
-    # delete message
-    if message.content.startswith('!deleteme'):
-        await message.channel.send('I will delete myself in 3 seconds...', delete_after=3.0)
-    
-    # countdown from 3 to 0
-    if message.content.startswith('!countdown'):
-        msg = await message.channel.send('3')
-        await asyncio.sleep(1.0)
-        await msg.edit(content='2')
-        await asyncio.sleep(1.0)
-        await msg.edit(content='1')
-        await asyncio.sleep(1.0)
-        await msg.edit(content='GO!')
- 
- 
+
+
+
 bot.run(TOKEN, log_handler=None)
