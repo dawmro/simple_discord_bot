@@ -10,14 +10,28 @@ import json
 import random
 
 import logging
+import logging.handlers
 import os
 
 # create directory to store logs
 if not os.path.exists("logs"):
   os.makedirs("logs")
 
-# define log file name
-handler = logging.FileHandler(filename='logs\discord.log', encoding='utf-8', mode='w')
+# setup logger
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+logging.getLogger('discord.http').setLevel(logging.INFO)
+
+handler = logging.handlers.RotatingFileHandler(
+    filename='logs\discord.log',
+    encoding='utf-8',
+    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    backupCount=5,  # Rotate through 5 files
+)
+dt_fmt = '%Y-%m-%d %H:%M:%S'
+formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 # load variables from .env file
 dotenv_path = Path('.env')
@@ -77,4 +91,4 @@ async def on_message(message):
         await message.channel.send(random.choice(response_to_sad_words))
  
  
-client.run(TOKEN, log_handler=handler, log_level=logging.DEBUG)
+client.run(TOKEN, log_handler=None, log_level=logging.DEBUG)
