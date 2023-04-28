@@ -53,11 +53,6 @@ bot = commands.Bot(command_prefix='!', description=description, intents=intents)
 
 # sad words
 sad_words = ["sad", "depressed", "mad", "unhapy", "heartbroken", "miserable", "upset", "hurt", "hurts"]
-response_to_sad_words = [
-    "Cheer up!", 
-    "You can do it!", 
-    "There is no need to be sad"
-]
 
 
 def get_joke():
@@ -84,7 +79,13 @@ async def on_message(ctx):
         
     # respond to sad words
     if any(word in ctx.content for word in sad_words):
-        await ctx.channel.send(random.choice(response_to_sad_words))
+        try:
+            with open("./data/responses_to_sad_words.txt", "r") as f: 
+                responses_to_sad_words = f.readlines()
+                response = random.choice(responses_to_sad_words)
+        except:
+           response = "Cheer up!"
+        await ctx.channel.send(response)
         
     # process bot commands
     await bot.process_commands(ctx)
