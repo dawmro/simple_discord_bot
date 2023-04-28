@@ -84,7 +84,7 @@ bot = commands.Bot(command_prefix='!', description=description, intents=intents)
 sad_words = ["sad", "depressed", "mad", "unhapy", "heartbroken", "miserable", "upset", "hurt", "hurts"]
 
 # bot status
-bot_status = cycle(["status one", "status two"])
+bot_status = cycle(["type in !help", "for commands list"])
 
 # get joke via api
 def get_joke():
@@ -95,18 +95,17 @@ def get_joke():
         joke = "Why was 6 afraid of 7? Because 7,8,9."
     return joke
 
-
-# display bot status
-@tasks.loop(seconds=5)
-async def change_status():
-    await bot.change_presence(activity=discord.Game(next(bot_status)))
-
 # trigger when bot ready to use
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print('------')
     change_status.start()
+
+# display bot status
+@tasks.loop(seconds=5)
+async def change_status():
+    await bot.change_presence(activity=discord.Game(next(bot_status)))
 
 # trigger when message received     
 @bot.event
@@ -130,30 +129,29 @@ async def on_message(ctx):
     
 # say hello
 @bot.command()
-async def hello(ctx, *args):
+async def hello(ctx, *args, description = "bot greets you and says your name"):
     await ctx.send(f"Hello {ctx.author}")
     
 # check bot latency    
 @bot.command()
-async def ping(ctx, *args):
+async def ping(ctx, *args, description = "check bot latency"):
     bot_latency = round(bot.latency * 1000)
     await ctx.channel.send(f"Pong {bot_latency}ms")
 
-
 # tell joke
 @bot.command()
-async def joke(ctx, *args):
+async def joke(ctx, *args, description = "bot tells you joke"):
     joke = get_joke()
     await ctx.send(joke)
     
 # delete message
 @bot.command()
-async def deleteme(ctx, *args):
+async def deleteme(ctx, *args, description = "bot responds and then deletes own message"):
     await ctx.send('I will delete myself in 3 seconds...', delete_after=3.0)
     
 # countdown from 3 to 0
 @bot.command()
-async def countdown(ctx, *args):
+async def countdown(ctx, *args, description = "countdown from 3 to 0"):
     msg = await ctx.send('3')
     await asyncio.sleep(1.0)
     await msg.edit(content='2')
@@ -164,7 +162,7 @@ async def countdown(ctx, *args):
 
 # get coin price    
 @bot.command()
-async def price(ctx, arg):
+async def price(ctx, arg, description = "get price of coins such as BTC, ETH, and so on"):
     cmc = CMC(CMC_API_KEY)
     coin_price = round(cmc.getPrice(arg)[arg]['quote']['USD']['price'], 2)
     await ctx.channel.send(f" 1 {arg} costs {coin_price} USD")
