@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import os
 from dotenv import load_dotenv
@@ -18,6 +18,8 @@ import asyncio
 
 from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+
+from itertools import cycle
 
 description = "Simple Discord Boot [WIP]"
 
@@ -81,7 +83,10 @@ bot = commands.Bot(command_prefix='!', description=description, intents=intents)
 # sad words
 sad_words = ["sad", "depressed", "mad", "unhapy", "heartbroken", "miserable", "upset", "hurt", "hurts"]
 
+# bot status
+bot_status = cycle(["status one", "status two"])
 
+# get joke via api
 def get_joke():
     response = requests.get("https://api.chucknorris.io/jokes/random", timeout = 3)
     try:  
@@ -91,11 +96,17 @@ def get_joke():
     return joke
 
 
+# display bot status
+@tasks.loop(seconds=5)
+async def change_status():
+    await bot.change_presence(activity=discord.Game(next(bot_status)))
+
 # trigger when bot ready to use
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     print('------')
+    change_status.start()
 
 # trigger when message received     
 @bot.event
