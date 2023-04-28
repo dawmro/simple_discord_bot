@@ -16,7 +16,33 @@ import os
 
 import asyncio
 
-description = "Simpe Discord Boot [WIP]"
+from requests import Request, Session
+from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+
+description = "Simple Discord Boot [WIP]"
+
+
+class CMC:
+    # https://coinmarketcap.com/api/documentation/v1/#
+    def __init__(self, token):
+        self.api_url = 'https://pro-api.coinmarketcap.com'
+        self.headers = {
+            'Accepts': 'application/json',
+            'X-CMC_PRO_API_KEY': CMC_API_KEY,
+        }
+        self.session = Session()
+        self.session.headers.update(self.headers)
+               
+    def getPrice(self, symbol):
+        url = self.api_url + '/v1/cryptocurrency/quotes/latest'
+        parameters = {'symbol': symbol}
+        try:
+            r = self.session.get(url, params = parameters)
+            data = r.json()['data']
+            return data
+        except (ConnectionError, Timeout, TooManyRedirects) as e:
+            print(e)
+
 
 # create directory to store logs
 if not os.path.exists("logs"):
@@ -42,6 +68,7 @@ logger.addHandler(handler)
 dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
 TOKEN = os.getenv('TOKEN')
+CMC_API_KEY = os.getenv('CMC_API_KEY')
 
 # enable message intent
 intents = discord.Intents.default()
@@ -117,5 +144,11 @@ async def countdown(ctx, *args):
     await asyncio.sleep(1.0)
     await msg.edit(content='GO!')
 
+# get coin price    
+@bot.command()
+async def price(ctx, arg):
+    cmc = CMC(CMC_API_KEY)
+    coin_price = round(cmc.getPrice(arg)[arg]['quote']['USD']['price'], 2)
+    await ctx.channel.send(f" 1 {arg} costs {coin_price} USD")
 
 bot.run(TOKEN, log_handler=None)
