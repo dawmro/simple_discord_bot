@@ -121,6 +121,13 @@ async def on_message(ctx):
 @bot.command()
 async def hello(ctx, *args):
     await ctx.send(f"Hello {ctx.author}")
+    
+# check bot latency    
+@bot.command()
+async def ping(ctx, *args):
+    bot_latency = round(bot.latency * 1000)
+    await ctx.channel.send(f"Pong {bot_latency}ms")
+
 
 # tell joke
 @bot.command()
