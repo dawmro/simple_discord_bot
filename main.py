@@ -164,7 +164,7 @@ async def countdown(ctx, description = "countdown from 3 to 0"):
 @bot.command()
 async def price(ctx, arg, description = "get price of coins such as BTC, ETH, and so on"):
     cmc = CMC(CMC_API_KEY)
-    coin_price = round(cmc.getPrice(arg)[arg]['quote']['USD']['price'], 2)
-    await ctx.channel.send(f" 1 {arg} costs {coin_price} USD")
+    price = round(cmc.getPrice(arg)[arg]['quote']['USD']['price'], 2)
+    await ctx.channel.send(f" 1 {arg} costs {price} USD")
 
 bot.run(TOKEN, log_handler=None)
