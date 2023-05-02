@@ -129,29 +129,29 @@ async def on_message(ctx):
     
 # say hello
 @bot.command()
-async def hello(ctx, *args, description = "bot greets you and says your name"):
+async def hello(ctx, description = "bot greets you and says your name"):
     await ctx.send(f"Hello {ctx.author}")
     
 # check bot latency    
 @bot.command()
-async def ping(ctx, *args, description = "check bot latency"):
+async def ping(ctx, description = "check bot latency"):
     bot_latency = round(bot.latency * 1000)
     await ctx.channel.send(f"Pong {bot_latency}ms")
 
 # tell joke
 @bot.command()
-async def joke(ctx, *args, description = "bot tells you joke"):
+async def joke(ctx, description = "bot tells you joke"):
     joke = get_joke()
     await ctx.send(joke)
     
 # delete message
 @bot.command()
-async def deleteme(ctx, *args, description = "bot responds and then deletes own message"):
+async def deleteme(ctx, description = "bot responds and then deletes own message"):
     await ctx.send('I will delete myself in 3 seconds...', delete_after=3.0)
     
 # countdown from 3 to 0
 @bot.command()
-async def countdown(ctx, *args, description = "countdown from 3 to 0"):
+async def countdown(ctx, description = "countdown from 3 to 0"):
     msg = await ctx.send('3')
     await asyncio.sleep(1.0)
     await msg.edit(content='2')
