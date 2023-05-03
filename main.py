@@ -126,17 +126,6 @@ async def on_message(ctx):
         
     # process bot commands
     await bot.process_commands(ctx)
-    
-# countdown from 3 to 0
-@bot.command()
-async def countdown(ctx, description = "countdown from 3 to 0"):
-    msg = await ctx.send('3')
-    await asyncio.sleep(1.0)
-    await msg.edit(content='2')
-    await asyncio.sleep(1.0)
-    await msg.edit(content='1')
-    await asyncio.sleep(1.0)
-    await msg.edit(content='GO!')
 
 # get coin price    
 @bot.command()
