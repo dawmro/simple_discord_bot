@@ -86,14 +86,7 @@ sad_words = ["sad", "depressed", "mad", "unhapy", "heartbroken", "miserable", "u
 # bot status
 bot_status = cycle(["type in !help", "for commands list"])
 
-# get joke via api
-def get_joke():
-    response = requests.get("https://api.chucknorris.io/jokes/random", timeout = 3)
-    try:  
-        joke = json.loads(response.text)['value']
-    except:
-        joke = "Why was 6 afraid of 7? Because 7,8,9."
-    return joke
+
 
 # trigger when bot ready to use
 @bot.event
@@ -138,12 +131,6 @@ async def on_message(ctx):
 @bot.command()
 async def hello(ctx, description = "bot greets you and says your name"):
     await ctx.send(f"Hello {ctx.author}")
-
-# tell joke
-@bot.command()
-async def joke(ctx, description = "bot tells you joke"):
-    joke = get_joke()
-    await ctx.send(joke)
     
 # delete message
 @bot.command()
