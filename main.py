@@ -127,10 +127,6 @@ async def on_message(ctx):
     # process bot commands
     await bot.process_commands(ctx)
     
-# say hello
-@bot.command()
-async def hello(ctx, description = "bot greets you and says your name"):
-    await ctx.send(f"Hello {ctx.author}")
     
 # delete message
 @bot.command()
