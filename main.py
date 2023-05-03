@@ -102,6 +102,13 @@ async def on_ready():
     print('------')
     change_status.start()
 
+# load cogs from files    
+async def load_cogs():
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py"):
+            await bot.load_extension(f"cogs.{filename[:-3]}")
+            print(f"{filename[:-3]} is loaded")
+
 # display bot status
 @tasks.loop(seconds=5)
 async def change_status():
@@ -131,12 +138,6 @@ async def on_message(ctx):
 @bot.command()
 async def hello(ctx, description = "bot greets you and says your name"):
     await ctx.send(f"Hello {ctx.author}")
-    
-# check bot latency    
-@bot.command()
-async def ping(ctx, description = "check bot latency"):
-    bot_latency = round(bot.latency * 1000)
-    await ctx.channel.send(f"Pong {bot_latency}ms")
 
 # tell joke
 @bot.command()
@@ -167,4 +168,10 @@ async def price(ctx, arg, description = "get price of coins such as BTC, ETH, an
     price = round(cmc.getPrice(arg)[arg]['quote']['USD']['price'], 2)
     await ctx.channel.send(f" 1 {arg} costs {price} USD")
 
-bot.run(TOKEN, log_handler=None)
+async def main():
+    async with bot:
+        await load_cogs()
+        await bot.start(TOKEN)
+        
+        
+asyncio.run(main())
