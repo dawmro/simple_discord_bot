@@ -127,12 +127,6 @@ async def on_message(ctx):
     # process bot commands
     await bot.process_commands(ctx)
     
-    
-# delete message
-@bot.command()
-async def deleteme(ctx, description = "bot responds and then deletes own message"):
-    await ctx.send('I will delete myself in 3 seconds...', delete_after=3.0)
-    
 # countdown from 3 to 0
 @bot.command()
 async def countdown(ctx, description = "countdown from 3 to 0"):
