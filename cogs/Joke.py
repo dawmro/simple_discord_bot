@@ -26,7 +26,8 @@ class Joke(commands.Cog):
     @commands.command()
     async def joke(self, ctx, description = "bot tells you joke"):
         joke = self.get_joke()
-        await ctx.send(joke)
+        await ctx.send(joke, delete_after=60.0)
+        await ctx.message.delete()
         
 async def setup(bot):
     await bot.add_cog(Joke(bot))

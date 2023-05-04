@@ -14,7 +14,8 @@ class Ping(commands.Cog):
     @commands.command()
     async def ping(self, ctx, description = "check bot latency"):
         bot_latency = round(self.bot.latency * 1000)
-        await ctx.channel.send(f"Pong {bot_latency}ms")
+        await ctx.channel.send(f"Pong {bot_latency}ms", delete_after=60.0)
+        await ctx.message.delete()
         
 async def setup(bot):
     await bot.add_cog(Ping(bot))

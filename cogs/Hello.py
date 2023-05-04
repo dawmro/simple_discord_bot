@@ -13,7 +13,8 @@ class Hello(commands.Cog):
     # say hello
     @commands.command()
     async def hello(self, ctx, description = "bot greets you and says your name"):
-        await ctx.send(f"Hello {ctx.author}")
+        await ctx.send(f"Hello {ctx.author}", delete_after=60.0)
+        await ctx.message.delete()
         
 async def setup(bot):
     await bot.add_cog(Hello(bot))

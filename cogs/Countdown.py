@@ -20,7 +20,8 @@ class Countdown(commands.Cog):
         await asyncio.sleep(1.0)
         await msg.edit(content='1')
         await asyncio.sleep(1.0)
-        await msg.edit(content='GO!')
+        await msg.edit(content='GO!', delete_after=60.0)
+        await ctx.message.delete()
         
 async def setup(bot):
     await bot.add_cog(Countdown(bot))
