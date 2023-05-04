@@ -50,8 +50,15 @@ class Price(commands.Cog):
     @commands.command()
     async def price(self, ctx, arg, description = "get price of coins such as BTC, ETH, and so on"):
         cmc = CMC(CMC_API_KEY)
-        price = round(cmc.getPrice(arg)[arg]['quote']['USD']['price'], 2)
-        await ctx.channel.send(f" 1 {arg} costs {price} USD")
+        coin_data = cmc.getPrice(arg)[arg]['quote']['USD']
+        price = round(coin_data['price'], 2)
+        percent_change_1h = round(coin_data['percent_change_1h'], 2)
+        percent_change_24h = round(coin_data['percent_change_24h'], 2)
+        percent_change_30d = round(coin_data['percent_change_30d'], 2)
+        last_updated = coin_data['last_updated']
+        
+        
+        await ctx.channel.send(f" {arg}: {price} USD | 1h: {percent_change_1h}% | 24h: {percent_change_24h}% | 30d: {percent_change_30d}% | @{last_updated}")
    
    
 async def setup(bot):
