@@ -26,7 +26,7 @@ class CMC:
         self.session = Session()
         self.session.headers.update(self.headers)
                
-    def getData(self, symbol):
+    def getCoinData(self, symbol):
         url = self.api_url + '/v1/cryptocurrency/quotes/latest'
         parameters = {'symbol': symbol}
         try:
@@ -50,7 +50,7 @@ class Price(commands.Cog):
     @commands.command()
     async def price(self, ctx, arg, description = "get price of coins such as BTC, ETH, and so on"):
         cmc = CMC(CMC_API_KEY)
-        coin_data = cmc.getData(arg)[arg]['quote']['USD']
+        coin_data = cmc.getCoinData(arg)[arg]['quote']['USD']
         price = round(coin_data['price'], 4)
         percent_change_1h = round(coin_data['percent_change_1h'], 2)
         percent_change_24h = round(coin_data['percent_change_24h'], 2)
