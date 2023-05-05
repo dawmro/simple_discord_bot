@@ -93,6 +93,7 @@ async def on_message(ctx):
                 response = random.choice(responses_to_sad_words)
         except:
            response = "Cheer up!"
+           
         await ctx.channel.send(response)
         
     # process bot commands
