@@ -33,6 +33,17 @@ class LevelSystem(commands.Cog):
             # prevent crashes
             await asyncio.sleep(5)
             
+    # add lexel to user    
+    def level_up(self, author_id):
+        current_exp = self.users[author_id]["Experience"]
+        current_level = self.users[author_id]["Level"]
+        if current_exp >= math.ceil((7 * (current_level ** 4)) / 3.5):
+            self.users[author_id]["Level"] += 1
+            return True
+        else:
+            return False
+            
+    # trigger on new message
     @commands.Cog.listener()
     async def on_message(self, message):
         # get user id
@@ -54,16 +65,23 @@ class LevelSystem(commands.Cog):
             level_up_embed.add_field(name="Congratulations", value=f"{message.author.mention} has just leveled up to level {self.users[author_id]['Level']}!")
             await message.channel.send(embed=level_up_embed, delete_after=60.0)
     
-    # add lexel to user    
-    def level_up(self, author_id):
-        current_exp = self.users[author_id]["Experience"]
-        current_level = self.users[author_id]["Level"]
-        if current_exp >= math.ceil((7 * (current_level ** 4)) / 3.5):
-            self.users[author_id]["Level"] += 1
-            return True
-        else:
-            return False
-    
+    # check current level / exp
+    @commands.command(aliases=["lvl", "experience", "exp"])
+    async def level(self, ctx, user: discord.User=None):
+        # check own level
+        if user is None:
+            user = ctx.author
+        # check level of a given user
+        elif user is not None:
+            user = user
+ 
+        level_card = discord.Embed(title=f"{user}'s Stats:", color=discord.Color.yellow())
+        level_card.add_field(name="Level:", value=self.users[str(user.id)]["Level"])
+        level_card.add_field(name="Experience:", value=self.users[str(user.id)]["Experience"])
+        level_card.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar)
         
+        await ctx.send(embed=level_card, delete_after=60.0)
+    
+    
 async def setup(bot):
     await bot.add_cog(LevelSystem(bot))
