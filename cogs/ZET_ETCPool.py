@@ -53,8 +53,9 @@ class ZET_ETCPool(commands.Cog):
     @commands.command()
     async def block(self, ctx, description = "get info about latest ETC block mined by pool, usage example: !block"):
     
-        pool_blocks = ZET_ETC()
-        pool_blocks_data = pool_blocks.getBlocksData()
+        zet_etc = ZET_ETC()
+        pool_blocks_data = zet_etc.getBlocksData()
+        
         latest_matured = pool_blocks_data['matured'][0]
         hash = latest_matured['hash']
         height = latest_matured['height']
@@ -82,8 +83,8 @@ class ZET_ETCPool(commands.Cog):
     @commands.command(aliases=["payout"])
     async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !block 0x6030c8112e68396416e98f8eeaabfade426e472b"):
     
-        wallet_payments = ZET_ETC()
-        wallet_payments_data = wallet_payments.getAccountsData(wallet)
+        zet_etc = ZET_ETC()
+        wallet_payments_data = zet_etc.getAccountsData(wallet)
 
         latest_payments = wallet_payments_data['payments'][0]
         amount = latest_payments['amount'] / (10**9)
