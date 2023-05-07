@@ -32,7 +32,16 @@ class LevelSystem(commands.Cog):
             # prevent crashes
             await asyncio.sleep(5)
             
-
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        # get user id
+        author_id = str(message.author.id)
+        
+        # add user to list of user if not present
+        if not author_id in self.users: 
+            self.users[author_id] = {}
+            self.users[author_id]["Level"] = 1
+            self.users[author_id]["Experience"] = 0
             
     
 
