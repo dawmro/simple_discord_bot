@@ -37,7 +37,7 @@ class LevelSystem(commands.Cog):
     def level_up(self, author_id):
         current_exp = self.users[author_id]["Experience"]
         current_level = self.users[author_id]["Level"]
-        if current_exp >= math.ceil((7 * (current_level ** 2)) / 3.5):
+        if current_exp >= math.ceil(((3 * (current_level ** 3)) / 1.5) + 20):
             self.users[author_id]["Level"] += 1
             return True
         else:
