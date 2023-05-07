@@ -42,9 +42,20 @@ class LevelSystem(commands.Cog):
             self.users[author_id] = {}
             self.users[author_id]["Level"] = 1
             self.users[author_id]["Experience"] = 0
-            
+        
+        # add exp to user    
+        random_exp = random.randint(3, 7)
+        self.users[author_id]["Experience"] += random_exp
     
-
+    # add lexel to user    
+    def level_up(self, author_id):
+        current_exp = self.users[author_id]["Experience"]
+        current_level = self.users[author_id]["Level"]
+        if current_exp >= math.ceil((7 * (current_level ** 4)) / 3.5):
+            self.users[author_id]["Level"] += 1
+            return True
+        else:
+            return False
     
         
 async def setup(bot):
