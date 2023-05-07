@@ -32,12 +32,16 @@ class LevelSystem(commands.Cog):
 
             # prevent crashes
             await asyncio.sleep(5)
-            
+    
+    # calculate exp needed for next level
+    def next_lvl_exp(self, current_level):
+        return math.ceil(((3 * (current_level ** 3)) / 1.5) + 20)
+    
     # add lexel to user    
     def level_up(self, author_id):
         current_exp = self.users[author_id]["Experience"]
         current_level = self.users[author_id]["Level"]
-        if current_exp >= math.ceil(((3 * (current_level ** 3)) / 1.5) + 20):
+        if current_exp >= next_lvl_exp(current_level):
             self.users[author_id]["Level"] += 1
             return True
         else:
@@ -74,11 +78,16 @@ class LevelSystem(commands.Cog):
         # check level of a given user
         elif user is not None:
             user = user
+            
+        user_lvl = self.users[str(user.id)]["Level"]
+        user_exp = self.users[str(user.id)]["Experience"]
+        user_exp_needed_for_next_lvl = self.next_lvl_exp(user_lvl) - user_exp
  
         level_card = discord.Embed(title=f"{user}'s Stats:", color=discord.Color.yellow())
-        level_card.add_field(name="Level:", value=self.users[str(user.id)]["Level"])
-        level_card.add_field(name="Experience:", value=self.users[str(user.id)]["Experience"])
-        level_card.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar)
+        level_card.set_author(name = f"Requested by {ctx.author}", icon_url = ctx.author.avatar)
+        level_card.add_field(name="Level:", value = user_lvl)
+        level_card.add_field(name="Experience:", value = user_exp)
+        level_card.set_footer(text=f"Experience needed to level up: {user_exp_needed_for_next_lvl}")
         
         await ctx.send(embed=level_card, delete_after=60.0)
     
