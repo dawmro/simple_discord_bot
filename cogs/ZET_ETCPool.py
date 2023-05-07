@@ -8,8 +8,9 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
-
-class ZET_ETC_Pool_Blocks:
+  
+    
+class ZET_ETC:
     def __init__(self):
         self.api_url = 'https://etc.zet-tech.eu'
         self.headers = {
@@ -17,7 +18,8 @@ class ZET_ETC_Pool_Blocks:
         }
         self.session = Session()
         self.session.headers.update(self.headers)
-               
+    
+    # get json for blocks 
     def getBlocksData(self):
         url = self.api_url + '/api/blocks'
         try:
@@ -27,16 +29,7 @@ class ZET_ETC_Pool_Blocks:
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             print(e)
     
-    
-class ZET_ETC_Pool_Accounts:
-    def __init__(self):
-        self.api_url = 'https://etc.zet-tech.eu'
-        self.headers = {
-            'Accepts': 'application/json',
-        }
-        self.session = Session()
-        self.session.headers.update(self.headers)
-               
+    # get json for account
     def getAccountsData(self, wallet):
         url = self.api_url + '/api/accounts/'+wallet
         try:
@@ -60,7 +53,7 @@ class ZET_ETCPool(commands.Cog):
     @commands.command()
     async def block(self, ctx, description = "get info about latest ETC block mined by pool, usage example: !block"):
     
-        pool_blocks = ZET_ETC_Pool_Blocks()
+        pool_blocks = ZET_ETC()
         pool_blocks_data = pool_blocks.getBlocksData()
         latest_matured = pool_blocks_data['matured'][0]
         hash = latest_matured['hash']
@@ -89,7 +82,7 @@ class ZET_ETCPool(commands.Cog):
     @commands.command(aliases=["payout"])
     async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !block 0x6030c8112e68396416e98f8eeaabfade426e472b"):
     
-        wallet_payments = ZET_ETC_Pool_Accounts()
+        wallet_payments = ZET_ETC()
         wallet_payments_data = wallet_payments.getAccountsData(wallet)
 
         latest_payments = wallet_payments_data['payments'][0]
