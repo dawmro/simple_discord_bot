@@ -46,6 +46,12 @@ class LevelSystem(commands.Cog):
         # add exp to user    
         random_exp = random.randint(3, 7)
         self.users[author_id]["Experience"] += random_exp
+        
+        # check if user levels up
+        if self.level_up(author_id):
+            level_up_embed = discord.Embed(title="Level Up!", color=discord.Color.blue())
+            level_up_embed.add_field(name="Congratulations", value=f"{message.author.mention} has just leveled up to level {self.users[author_id]['Level']}!")
+            await message.channel.send(embed=level_up_embed)
     
     # add lexel to user    
     def level_up(self, author_id):
