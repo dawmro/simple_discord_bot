@@ -11,7 +11,6 @@ from pathlib import Path
 
 user_level_system_file = Path("data/json/user_level_system.json")
 if not os.path.exists(user_level_system_file):
-        os.makedirs(user_level_system_file) 
         with open(user_level_system_file, "w+") as f:
             f.write("{}")
 
