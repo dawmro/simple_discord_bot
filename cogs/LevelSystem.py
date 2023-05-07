@@ -41,7 +41,7 @@ class LevelSystem(commands.Cog):
     def level_up(self, author_id):
         current_exp = self.users[author_id]["Experience"]
         current_level = self.users[author_id]["Level"]
-        if current_exp >= next_lvl_exp(current_level):
+        if current_exp >= self.next_lvl_exp(current_level):
             self.users[author_id]["Level"] += 1
             return True
         else:
