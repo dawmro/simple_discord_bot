@@ -51,7 +51,7 @@ class LevelSystem(commands.Cog):
         if self.level_up(author_id):
             level_up_embed = discord.Embed(title="Level Up!", color=discord.Color.blue())
             level_up_embed.add_field(name="Congratulations", value=f"{message.author.mention} has just leveled up to level {self.users[author_id]['Level']}!")
-            await message.channel.send(embed=level_up_embed)
+            await message.channel.send(embed=level_up_embed, delete_after=60.0)
     
     # add lexel to user    
     def level_up(self, author_id):
