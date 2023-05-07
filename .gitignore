@@ -162,3 +162,6 @@ cython_debug/
 
 # Logs
 logs/
+
+# user level system
+data/json/user_level_system.json
