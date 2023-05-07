@@ -99,6 +99,7 @@ class LevelSystem(commands.Cog):
         level_card.set_footer(text=f"Experience needed to level up: {user_exp_needed_for_next_lvl}")
         
         await ctx.send(embed=level_card, delete_after=60.0)
+        await ctx.message.delete()
     
     
 async def setup(bot):
