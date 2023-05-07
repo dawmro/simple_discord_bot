@@ -5,6 +5,16 @@ import math
 import json
 from json.decoder import JSONDecodeError
 import random
+import os
+from pathlib import Path
+
+
+user_level_system_file = Path("data/json/user_level_system.json")
+if not os.path.exists(user_level_system_file):
+        os.makedirs(user_level_system_file) 
+        with open(user_level_system_file, "w+") as f:
+            f.write("{}")
+
 
 class LevelSystem(commands.Cog):
     def __init__(self, bot):
@@ -12,7 +22,7 @@ class LevelSystem(commands.Cog):
         self.bot.loop.create_task(self.save())
         
         # load users info from file
-        with open("data/json/user_level_system.json", "r") as f:
+        with open(user_level_system_file, "r") as f:
             try:
                 self.users = json.load(f)
             except JSONDecodeError:
@@ -27,7 +37,7 @@ class LevelSystem(commands.Cog):
     async def save(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
-            with open("data/json/user_level_system.json", "w") as f:
+            with open(user_level_system_file, "w") as f:
                 json.dump(self.users, f, indent=4)
 
             # prevent crashes
