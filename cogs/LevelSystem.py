@@ -9,6 +9,7 @@ import random
 class LevelSystem(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.bot.loop.create_task(self.save())
         
         # load users info from file
         with open("data/json/user_level_system.json", "r") as f:
@@ -16,7 +17,7 @@ class LevelSystem(commands.Cog):
                 self.users = json.load(f)
             except JSONDecodeError:
                 pass
-                
+            
     # trigger when class is ready
     @commands.Cog.listener()
     async def on_ready(self):
@@ -25,9 +26,9 @@ class LevelSystem(commands.Cog):
     # save user info
     async def save(self):
         await self.bot.wait_until_ready()
-        while not self.bot.is_close():
+        while not self.bot.is_closed():
             with open("data/json/user_level_system.json", "w") as f:
-                json.dumps(self.users, f, indent=4)
+                json.dump(self.users, f, indent=4)
 
             # prevent crashes
             await asyncio.sleep(5)
