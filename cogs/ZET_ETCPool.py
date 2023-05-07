@@ -81,7 +81,7 @@ class ZET_ETCPool(commands.Cog):
     
     # get block info    
     @commands.command(aliases=["payout"])
-    async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !block 0x6030c8112e68396416e98f8eeaabfade426e472b"):
+    async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !payment 0x6030c8112e68396416e98f8eeaabfade426e472b"):
     
         zet_etc = ZET_ETC()
         wallet_payments_data = zet_etc.getAccountsData(wallet)
