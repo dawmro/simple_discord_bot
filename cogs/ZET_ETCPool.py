@@ -106,8 +106,6 @@ class ZET_ETCPool(commands.Cog):
                     embed_message.set_footer(text = f"@{dt_object}") 
                     
                     await channel.send(embed = embed_message)
-                else:
-                    await channel.send(self.cached_block["height"])
                     
         # cache current block height
         self.cached_block["height"] = height 
