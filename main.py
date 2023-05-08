@@ -15,6 +15,8 @@ import asyncio
 
 from itertools import cycle
 
+from keep_alive import keep_alive
+
 description = "Simple Discord Boot [WIP]"
 
 
