@@ -115,7 +115,7 @@ class ZET_ETCPool(commands.Cog):
         await ctx.channel.send(embed = embed_message, delete_after=60.0)
         await ctx.message.delete()
     
-    # get block info    
+    # get payment info    
     @commands.command(aliases=["payout"])
     async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !payment 0x6030c8112e68396416e98f8eeaabfade426e472b"):
     
