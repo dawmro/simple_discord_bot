@@ -73,7 +73,7 @@ class ZET_ETCPool(commands.Cog):
             await asyncio.sleep(5)    
         
     # check for new block    
-    @tasks.loop(seconds = 10)
+    @tasks.loop(seconds = 60)
     async def new_block_check(self):
         # add dummy block height to cached block if not present
         if not "height" in self.cached_block: 
