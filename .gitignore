@@ -165,3 +165,6 @@ logs/
 
 # user level system
 data/json/user_level_system.json
+
+# cached blocks
+data/json/cached_block.json
