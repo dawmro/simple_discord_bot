@@ -105,5 +105,5 @@ async def main():
         await load_cogs()
         await bot.start(TOKEN)
         
-        
+keep_alive()        
 asyncio.run(main())
