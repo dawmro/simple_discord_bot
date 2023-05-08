@@ -8,7 +8,13 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
+import asyncio
  
+ 
+cached_block_file = Path("data/json/cached_block.json")
+if not os.path.exists(cached_block_file):
+        with open(cached_block_file, "w+") as f:
+            f.write("{}") 
     
 class ZET_ETC:
     def __init__(self):
@@ -43,18 +49,35 @@ class ZET_ETC:
 class ZET_ETCPool(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        # load cached block info from file
+        with open(cached_block_file, "r") as f:
+            try:
+                self.cached_block = json.load(f)
+            except JSONDecodeError:
+                pass
         self.new_block_check.start()
+        self.bot.loop.create_task(self.save_cached())
     
     # trigger when class is ready
     @commands.Cog.listener()
     async def on_ready(self):
         print("ZET_ETCPool.py is ready")
+             
+    # save current block height to cached block file    
+    async def save_cached(self):    
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed():
+            with open(cached_block_file, "w") as f:
+                json.dump(self.cached_block, f, indent=4)    
+            # prevent crashes
+            await asyncio.sleep(5)    
         
     # check for new block    
-    @tasks.loop(seconds = 60)
+    @tasks.loop(seconds = 10)
     async def new_block_check(self):
-        # get current timesptmp
-        current_timestamp = datetime.now().timestamp()
+        # add dummy block height to cached block if not present
+        if not "height" in self.cached_block: 
+            self.cached_block["height"] = 999999999999
         
         zet_etc = ZET_ETC()
         pool_blocks_data = zet_etc.getBlocksData()
@@ -71,7 +94,7 @@ class ZET_ETCPool(commands.Cog):
         
         for guild in self.bot.guilds:
             for channel in guild.text_channels:
-                if current_timestamp - 60 < timestamp:
+                if height > self.cached_block["height"]:
                     embed_message = discord.Embed(title = f"NEW BLOCK!", description = f"For ETC ZETpool", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/block/{hash}/transactions")
                     embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
                     embed_message.add_field(name = "Hash:", value = f"{hash}", inline = False) 
@@ -82,7 +105,12 @@ class ZET_ETCPool(commands.Cog):
                     embed_message.add_field(name = "Variance:", value = f"{variance}%", inline = True)
                     embed_message.set_footer(text = f"@{dt_object}") 
                     
-                    await channel.send(embed = embed_message)           
+                    await channel.send(embed = embed_message)
+                else:
+                    await channel.send(self.cached_block["height"])
+                    
+        # cache current block height
+        self.cached_block["height"] = height 
         
     # get block info    
     @commands.command()
@@ -114,6 +142,10 @@ class ZET_ETCPool(commands.Cog):
         
         await ctx.channel.send(embed = embed_message, delete_after=60.0)
         await ctx.message.delete()
+        
+        
+        
+
     
     # get payment info    
     @commands.command(aliases=["payout"])
