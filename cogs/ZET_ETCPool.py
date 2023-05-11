@@ -111,6 +111,7 @@ class ZET_ETCPool(commands.Cog):
         else:
             self.cached_wallets[author_id]["Wallet"] = wallet
             await ctx.channel.send(f"New Wallet {wallet} Added To Watch_Wallet!", delete_after=60.0)
+        await ctx.message.delete()
     
     
     # remove wallet from wallet_watch   
@@ -125,6 +126,7 @@ class ZET_ETCPool(commands.Cog):
         else:
             wallet = self.cached_wallets.pop(author_id)
             await ctx.channel.send(f"Wallet {wallet['Wallet']} Removed From Watch_Wallet!", delete_after=60.0)
+            await ctx.message.delete()
        
        
     # check watch_wallet status   
