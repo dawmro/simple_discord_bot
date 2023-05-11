@@ -15,6 +15,11 @@ cached_block_file = Path("data/json/cached_block.json")
 if not os.path.exists(cached_block_file):
         with open(cached_block_file, "w+") as f:
             f.write("{}") 
+            
+cached_wallets_file = Path("data/json/cached_wallets.json")
+if not os.path.exists(cached_wallets_file):
+        with open(cached_wallets_file, "w+") as f:
+            f.write("{}") 
     
 class ZET_ETC:
     def __init__(self):
@@ -55,6 +60,12 @@ class ZET_ETCPool(commands.Cog):
                 self.cached_block = json.load(f)
             except JSONDecodeError:
                 pass
+        # load cached wallets info from file
+        with open(cached_wallets_file, "r") as f:
+            try:
+                self.cached_wallets = json.load(f)
+            except JSONDecodeError:
+                pass
         self.new_block_check.start()
         self.bot.loop.create_task(self.save_cached())
     
@@ -67,11 +78,45 @@ class ZET_ETCPool(commands.Cog):
     async def save_cached(self):    
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
+            # save cached block
             with open(cached_block_file, "w") as f:
-                json.dump(self.cached_block, f, indent=4)    
-            # prevent crashes
+                json.dump(self.cached_block, f, indent=4)
+            # save cached wallets
+            with open(cached_wallets_file, "w") as f:
+                json.dump(self.cached_wallets, f, indent=4)    
+            # wait to prevent crashes
             await asyncio.sleep(5)    
-        
+    
+    # add wallet to wallet_watch   
+    @commands.command() 
+    async def add_watch_wallet(self, ctx, wallet, description = "add wallet to watch list to get notifications: !block"):
+        # get user id
+        author_id = str(ctx.author.id)
+        # add new entry of user and his wallet to watch list if user not present
+        if not author_id in self.cached_wallets: 
+            self.cached_wallets[author_id] = {}
+            self.cached_wallets[author_id]["Wallet"] = wallet
+            await ctx.channel.send(f"Created New Watch_Wallet For A Wallet {wallet}!", delete_after=60.0)
+        # add wallet to user wallet_watch if it is not already there   
+        elif self.cached_wallets[author_id]["Wallet"] == wallet:
+            await ctx.channel.send(f"Wallet {wallet} Already In Watch_Wallet!", delete_after=60.0)
+        else:
+            self.cached_wallets[author_id]["Wallet"] = wallet
+            await ctx.channel.send(f"New Wallet {wallet} Added To Watch_Wallet!", delete_after=60.0)
+    
+    # remove wallet from wallet_watch   
+    @commands.command() 
+    async def remove_watch_wallet(self, ctx, description = "add wallet to watch list to get notifications: !block"):
+        # get user id
+        author_id = str(ctx.author.id)
+        # if user not present do nothing 
+        if not author_id in self.cached_wallets: 
+            await ctx.channel.send("User Not Watching Any Wallet!", delete_after=60.0)
+        # remove wallet and user from wallet_watch  
+        else:
+            wallet = self.cached_wallets.pop(author_id)
+            await ctx.channel.send(f"Wallet {wallet['Wallet']} Removed From Watch_Wallet!", delete_after=60.0)
+    
     # check for new block    
     @tasks.loop(seconds = 60)
     async def new_block_check(self):
