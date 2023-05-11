@@ -20,7 +20,8 @@ cached_wallets_file = Path("data/json/cached_wallets.json")
 if not os.path.exists(cached_wallets_file):
         with open(cached_wallets_file, "w+") as f:
             f.write("{}") 
-    
+   
+   
 class ZET_ETC:
     def __init__(self):
         self.api_url = 'https://etc.zet-tech.eu'
@@ -29,6 +30,7 @@ class ZET_ETC:
         }
         self.session = Session()
         self.session.headers.update(self.headers)
+    
     
     # get json for blocks 
     def getBlocksData(self):
@@ -40,6 +42,7 @@ class ZET_ETC:
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             print(e)
     
+    
     # get json for account
     def getAccountsData(self, wallet):
         url = self.api_url + '/api/accounts/'+wallet
@@ -50,6 +53,7 @@ class ZET_ETC:
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             print(e)            
     
+
 
 class ZET_ETCPool(commands.Cog):
     def __init__(self, bot):
@@ -67,13 +71,16 @@ class ZET_ETCPool(commands.Cog):
             except JSONDecodeError:
                 pass
         self.new_block_check.start()
+        self.new_payment_check.start()
         self.bot.loop.create_task(self.save_cached())
+    
     
     # trigger when class is ready
     @commands.Cog.listener()
     async def on_ready(self):
         print("ZET_ETCPool.py is ready")
-             
+     
+     
     # save current block height to cached block file    
     async def save_cached(self):    
         await self.bot.wait_until_ready()
@@ -87,9 +94,10 @@ class ZET_ETCPool(commands.Cog):
             # wait to prevent crashes
             await asyncio.sleep(5)    
     
+    
     # add wallet to wallet_watch   
     @commands.command() 
-    async def add_watch_wallet(self, ctx, wallet, description = "add wallet to watch list to get notifications: !block"):
+    async def add_watch_wallet(self, ctx, wallet, description = "add wallet to watch list to get notifications, usage example: !add_watch_wallet 0x6030c8112e68396416e98f8eeaabfade426e472b"):
         # get user id
         author_id = str(ctx.author.id)
         # add new entry of user and his wallet to watch list if user not present
@@ -104,9 +112,10 @@ class ZET_ETCPool(commands.Cog):
             self.cached_wallets[author_id]["Wallet"] = wallet
             await ctx.channel.send(f"New Wallet {wallet} Added To Watch_Wallet!", delete_after=60.0)
     
+    
     # remove wallet from wallet_watch   
     @commands.command() 
-    async def remove_watch_wallet(self, ctx, description = "add wallet to watch list to get notifications: !block"):
+    async def remove_watch_wallet(self, ctx, description = "remove wallet from watch list and stop getting notifications, usage example: !remove_watch_wallet"):
         # get user id
         author_id = str(ctx.author.id)
         # if user not present do nothing 
@@ -116,10 +125,47 @@ class ZET_ETCPool(commands.Cog):
         else:
             wallet = self.cached_wallets.pop(author_id)
             await ctx.channel.send(f"Wallet {wallet['Wallet']} Removed From Watch_Wallet!", delete_after=60.0)
+       
+       
+    # check watch_wallet status   
+    @tasks.loop(seconds = 60)
+    async def new_payment_check(self):
+        # fix for AttributeError("'NoneType' object has no attribute 'send'")
+        await self.bot.wait_until_ready()
+        # create instance of a class
+        zet_etc = ZET_ETC()
+        # loop through every user having watch_wallet active
+        for cached_user in self.cached_wallets:
+            # get wallet info via api
+            wallet_data = zet_etc.getAccountsData(self.cached_wallets[cached_user]['Wallet'])
+            # get latest payment info
+            latest_payments = wallet_data['payments'][0]
+            # add new Payment entry if not present
+            if not 'Payment' in self.cached_wallets[cached_user]:
+                self.cached_wallets[cached_user]['Payment'] = latest_payments
+            # compare timestamps cached and new payments     
+            else:
+                # create user from cached_user string
+                user = self.bot.get_user(int(cached_user))
+                # if latest payment timestmp is newer than cached one 
+                if (latest_payments['timestamp'] > self.cached_wallets[cached_user]['Payment']['timestamp']): 
+                    # inform user about new payout via private message
+                    amount = latest_payments['amount'] / (10**9)
+                    tx = latest_payments['tx']
+                    timestamp = latest_payments['timestamp']
+                    dt_object = datetime.fromtimestamp(timestamp)
+                    embed_message = discord.Embed(title = f"NEW PAYMENT!", description = f"Wallet: {self.cached_wallets[cached_user]['Wallet']}", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/tx/{tx}")
+                    embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
+                    embed_message.add_field(name = "TX:", value = f"{tx}", inline = False) 
+                    embed_message.add_field(name = "Amount:", value = f"{amount} ETC", inline = True) 
+                    embed_message.set_footer(text = f"@{dt_object}")
+                    await user.send(embed = embed_message)
+    
     
     # check for new block    
     @tasks.loop(seconds = 60)
     async def new_block_check(self):
+        await self.bot.wait_until_ready()
         # add dummy block height to cached block if not present
         if not "height" in self.cached_block: 
             self.cached_block["height"] = 999999999999
@@ -154,7 +200,8 @@ class ZET_ETCPool(commands.Cog):
                     
         # cache current block height
         self.cached_block["height"] = height 
-        
+      
+      
     # get block info    
     @commands.command()
     async def block(self, ctx, description = "get info about latest ETC block mined by pool, usage example: !block"):
@@ -185,9 +232,6 @@ class ZET_ETCPool(commands.Cog):
         
         await ctx.channel.send(embed = embed_message, delete_after=60.0)
         await ctx.message.delete()
-        
-        
-        
 
     
     # get payment info    
@@ -212,6 +256,8 @@ class ZET_ETCPool(commands.Cog):
         
         await ctx.channel.send(embed = embed_message, delete_after=60.0)
         await ctx.message.delete()
+
+
 
 async def setup(bot):
     await bot.add_cog(ZET_ETCPool(bot))
