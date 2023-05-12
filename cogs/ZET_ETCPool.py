@@ -162,6 +162,8 @@ class ZET_ETCPool(commands.Cog):
                     embed_message.add_field(name = "Amount:", value = f"{amount} ETC", inline = True) 
                     embed_message.set_footer(text = f"@{dt_object}")
                     await user.send(embed = embed_message)
+                # cache current payment
+                self.cached_wallets[cached_user]['Payment'] = latest_payments
     
     
     # check for new block    
