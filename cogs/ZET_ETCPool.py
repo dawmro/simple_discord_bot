@@ -9,6 +9,12 @@ from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
 import asyncio
+
+
+# load variables from .env file
+dotenv_path = Path('.env')
+load_dotenv(dotenv_path=dotenv_path)
+ZETPOOL_CHANNEL_ID = int(os.getenv('ZETPOOL_CHANNEL_ID'))
  
  
 cached_block_file = Path("data/json/cached_block.json")
@@ -223,20 +229,25 @@ class ZET_ETCPool(commands.Cog):
         timestamp = latest_matured['timestamp']
         dt_object = datetime.fromtimestamp(timestamp)
         
-        for guild in self.bot.guilds:
-            for channel in guild.text_channels:
-                if height > self.cached_block["height"]:
-                    embed_message = discord.Embed(title = f"NEW BLOCK!", description = f"For ETC ZETpool", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/block/{hash}/transactions")
-                    embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
-                    embed_message.add_field(name = "Hash:", value = f"{hash}", inline = False) 
-                    embed_message.add_field(name = "Height:", value = f"{height}", inline = True) 
-                    embed_message.add_field(name = "Orphan:", value = f"{orphan}", inline = True)
-                    embed_message.add_field(name = "Uncle:", value = f"{uncle}", inline = True)
-                    embed_message.add_field(name = "Reward:", value = f"{reward} ETC", inline = True)
-                    embed_message.add_field(name = "Variance:", value = f"{variance}%", inline = True)
-                    embed_message.set_footer(text = f"@{dt_object}") 
-                    
-                    await channel.send(embed = embed_message)
+        #for guild in self.bot.guilds:
+        #    for channel in guild.text_channels:
+        
+        # get correct channel
+        channel = self.bot.get_channel(ZETPOOL_CHANNEL_ID)
+        # send message to the channel when new block arrives
+        if height > self.cached_block["height"]:
+            # create embed
+            embed_message = discord.Embed(title = f"NEW BLOCK!", description = f"For ETC ZETpool", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/block/{hash}/transactions")
+            embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
+            embed_message.add_field(name = "Hash:", value = f"{hash}", inline = False) 
+            embed_message.add_field(name = "Height:", value = f"{height}", inline = True) 
+            embed_message.add_field(name = "Orphan:", value = f"{orphan}", inline = True)
+            embed_message.add_field(name = "Uncle:", value = f"{uncle}", inline = True)
+            embed_message.add_field(name = "Reward:", value = f"{reward} ETC", inline = True)
+            embed_message.add_field(name = "Variance:", value = f"{variance}%", inline = True)
+            embed_message.set_footer(text = f"@{dt_object}") 
+            # send it
+            await channel.send(embed = embed_message)
                     
         # cache current block height
         self.cached_block["height"] = height 
