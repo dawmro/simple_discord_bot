@@ -51,8 +51,15 @@ conn.commit()
 
 # close the connection
 conn.close()
+'''
+author_id = "1071380251529187378"
+wallet = "0x6030c8112e68396416e98f8eeaabfade426e472b"
+'''
 
+            
 
+        
+ 
 cached_block_file = Path("data/json/cached_block.json")
 if not os.path.exists(cached_block_file):
         with open(cached_block_file, "w+") as f:
@@ -142,7 +149,18 @@ class ZET_ETCPool(commands.Cog):
     async def add_watch_wallet(self, ctx, wallet, description = "add wallet to watch list to get notifications, usage example: !add_watch_wallet 0x6030c8112e68396416e98f8eeaabfade426e472b"):
         # get user id
         author_id = str(ctx.author.id)
- 
+        
+        # connect to database
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        cur = conn.cursor() 
+        # insert author_ad and wallet to database, replace wqallet if already exists
+        cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, NULL, NULL, NULL)""", (author_id, wallet))
+        # commit the changes to the database
+        conn.commit()
+        # close the connection
+        conn.close()
+        await ctx.channel.send(f"Watch_Wallet For {wallet} Active!", delete_after=60.0)
+        
         try:
             # remove wallet and user from wallet_watch  
             self.cached_wallets.pop(author_id)
