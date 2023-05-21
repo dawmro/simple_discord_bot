@@ -9,14 +9,24 @@ from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime
 import asyncio
-
+import sqlite3
 
 # load variables from .env file
 dotenv_path = Path('.env')
 load_dotenv(dotenv_path=dotenv_path)
 ZETPOOL_CHANNEL_ID = int(os.getenv('ZETPOOL_CHANNEL_ID'))
- 
- 
+
+# create database directory
+db_path = "data/db"
+if not os.path.exists(db_path):
+    os.makedirs(db_path)
+
+# connect to database
+conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+cur = conn.cursor() 
+
+
+
 cached_block_file = Path("data/json/cached_block.json")
 if not os.path.exists(cached_block_file):
         with open(cached_block_file, "w+") as f:
@@ -106,6 +116,7 @@ class ZET_ETCPool(commands.Cog):
     async def add_watch_wallet(self, ctx, wallet, description = "add wallet to watch list to get notifications, usage example: !add_watch_wallet 0x6030c8112e68396416e98f8eeaabfade426e472b"):
         # get user id
         author_id = str(ctx.author.id)
+ 
         try:
             # remove wallet and user from wallet_watch  
             self.cached_wallets.pop(author_id)
@@ -115,7 +126,9 @@ class ZET_ETCPool(commands.Cog):
         if not author_id in self.cached_wallets: 
             self.cached_wallets[author_id] = {}
             self.cached_wallets[author_id]["Wallet"] = wallet
+
             await ctx.channel.send(f"Created New Watch_Wallet For A Wallet {wallet}!", delete_after=60.0)
+
         # add wallet to user wallet_watch if it is not already there   
         elif self.cached_wallets[author_id]["Wallet"] == wallet:
             await ctx.channel.send(f"Wallet {wallet} Already In Watch_Wallet!", delete_after=60.0)
@@ -130,6 +143,7 @@ class ZET_ETCPool(commands.Cog):
     async def remove_watch_wallet(self, ctx, description = "remove wallet from watch list and stop getting notifications, usage example: !remove_watch_wallet"):
         # get user id
         author_id = str(ctx.author.id)
+
         # if user not present do nothing 
         if not author_id in self.cached_wallets: 
             await ctx.channel.send("User Not Watching Any Wallet!", delete_after=60.0)
