@@ -187,6 +187,16 @@ class ZET_ETCPool(commands.Cog):
     async def remove_watch_wallet(self, ctx, description = "remove wallet from watch list and stop getting notifications, usage example: !remove_watch_wallet"):
         # get user id
         author_id = str(ctx.author.id)
+        
+        # connect to database
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        cur = conn.cursor() 
+        cur.execute("""DELETE FROM discord_users WHERE user_id = ? AND EXISTS (SELECT 1 FROM discord_users WHERE user_id = ?)""", (author_id, author_id))
+        # commit the changes to the database
+        conn.commit()
+        # close the connection
+        conn.close()
+        await ctx.channel.send(f"Watch_Wallet Deactivated!", delete_after=60.0)
 
         # if user not present do nothing 
         if not author_id in self.cached_wallets: 
