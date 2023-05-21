@@ -171,3 +171,6 @@ data/json/cached_block.json
 
 # cached wallets
 data/json/cached_wallets.json
+
+# database
+data/db/
