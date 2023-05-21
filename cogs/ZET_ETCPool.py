@@ -25,6 +25,20 @@ if not os.path.exists(db_path):
 conn = sqlite3.connect("data/db/ZET_ETCPool.db")
 cur = conn.cursor() 
 
+# create table for discord_users
+cur.execute("""CREATE TABLE IF NOT EXISTS discord_users (
+    user_id TEXT PRIMARY KEY, 
+    wallet_number TEXT,
+    payout_amount TEXT,
+    payout_timestamp TEXT,
+    payout_tx TEXT
+    )""")
+
+# commit the changes to the database
+conn.commit()
+
+# close the connection
+conn.close()
 
 
 cached_block_file = Path("data/json/cached_block.json")
