@@ -36,6 +36,18 @@ cur.execute("""CREATE TABLE IF NOT EXISTS discord_users (
 
 # commit the changes to the database
 conn.commit()
+    
+# create table for workers with worker id as primary key and user id as foreign key   
+cur.execute("""CREATE TABLE IF NOT EXISTS workers (
+    wallet_number TEXT,
+    worker_id TEXT, 
+    offline BOOLEAN,
+    PRIMARY KEY (wallet_number, worker_id),
+    FOREIGN KEY (wallet_number) REFERENCES users (wallet_number)
+    )""")    
+    
+# commit the changes to the database
+conn.commit()
 
 # close the connection
 conn.close()
