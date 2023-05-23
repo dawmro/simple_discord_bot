@@ -66,10 +66,7 @@ if not os.path.exists(cached_block_file):
         with open(cached_block_file, "w+") as f:
             f.write("{}") 
             
-cached_wallets_file = Path("data/json/cached_wallets.json")
-if not os.path.exists(cached_wallets_file):
-        with open(cached_wallets_file, "w+") as f:
-            f.write("{}") 
+
    
    
 class ZET_ETC:
