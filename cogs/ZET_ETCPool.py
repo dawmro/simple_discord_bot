@@ -51,14 +51,7 @@ conn.commit()
 
 # close the connection
 conn.close()
-'''
-author_id = "1071380251529187378"
-wallet = "0x6030c8112e68396416e98f8eeaabfade426e472b"
-'''
-
-            
-
-        
+    
  
 cached_block_file = Path("data/json/cached_block.json")
 if not os.path.exists(cached_block_file):
@@ -113,12 +106,7 @@ class ZET_ETCPool(commands.Cog):
                 self.cached_block = json.load(f)
             except JSONDecodeError:
                 pass
-        # load cached wallets info from file
-        with open(cached_wallets_file, "r") as f:
-            try:
-                self.cached_wallets = json.load(f)
-            except JSONDecodeError:
-                pass
+
         self.new_block_check.start()
         self.watch_wallet_check.start()
         self.bot.loop.create_task(self.save_cached())
@@ -137,9 +125,6 @@ class ZET_ETCPool(commands.Cog):
             # save cached block
             with open(cached_block_file, "w") as f:
                 json.dump(self.cached_block, f, indent=4)
-            # save cached wallets
-            with open(cached_wallets_file, "w") as f:
-                json.dump(self.cached_wallets, f, indent=4)    
             # wait to prevent crashes
             await asyncio.sleep(5)    
     
@@ -159,26 +144,8 @@ class ZET_ETCPool(commands.Cog):
         conn.commit()
         # close the connection
         conn.close()
-        await ctx.channel.send(f"Watch_Wallet For {wallet} Active!", delete_after=60.0)
         
-        try:
-            # remove wallet and user from wallet_watch  
-            self.cached_wallets.pop(author_id)
-        except:
-            pass
-        # add new entry of user and his wallet to watch list if user not present
-        if not author_id in self.cached_wallets: 
-            self.cached_wallets[author_id] = {}
-            self.cached_wallets[author_id]["Wallet"] = wallet
-
-            await ctx.channel.send(f"Created New Watch_Wallet For A Wallet {wallet}!", delete_after=60.0)
-
-        # add wallet to user wallet_watch if it is not already there   
-        elif self.cached_wallets[author_id]["Wallet"] == wallet:
-            await ctx.channel.send(f"Wallet {wallet} Already In Watch_Wallet!", delete_after=60.0)
-        else:
-            self.cached_wallets[author_id]["Wallet"] = wallet
-            await ctx.channel.send(f"New Wallet {wallet} Added To Watch_Wallet!", delete_after=60.0)
+        await ctx.channel.send(f"Watch_Wallet For {wallet} Active!", delete_after=60.0)
         await ctx.message.delete()
     
     
@@ -197,15 +164,6 @@ class ZET_ETCPool(commands.Cog):
         # close the connection
         conn.close()
         await ctx.channel.send(f"Watch_Wallet Deactivated!", delete_after=60.0)
-
-        # if user not present do nothing 
-        if not author_id in self.cached_wallets: 
-            await ctx.channel.send("User Not Watching Any Wallet!", delete_after=60.0)
-        # remove wallet and user from wallet_watch  
-        else:
-            wallet = self.cached_wallets.pop(author_id)
-            await ctx.channel.send(f"Wallet {wallet['Wallet']} Removed From Watch_Wallet!", delete_after=60.0)
-            await ctx.message.delete()
        
        
     # check watch_wallet status   
@@ -213,68 +171,96 @@ class ZET_ETCPool(commands.Cog):
     async def watch_wallet_check(self):
         # fix for AttributeError("'NoneType' object has no attribute 'send'")
         await self.bot.wait_until_ready()
-        # dirty fix for "local variable 'user' referenced before assignment"
-        try: 
-            # create instance of a class
-            zet_etc = ZET_ETC()
-            # loop through every user having watch_wallet active
-            for cached_user in self.cached_wallets:
+
+        # create instance of a class
+        zet_etc = ZET_ETC()
+        
+        # connect to database
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        cur = conn.cursor() 
+        # get everything from discord_users database
+        cur.execute("""SELECT user_id, wallet_number, payout_amount, payout_timestamp, payout_tx FROM discord_users""")
+        # create empty lists for data
+        users_list = []
+        wallets_list = []
+        amounts_list = []
+        timestamps_list = []
+        txs_list = []
+        # put data into lists
+        for row in cur.fetchall():
+            users_list.append(row[0])
+            wallets_list.append(row[1])
+            amounts_list.append(row[2])
+            timestamps_list.append(row[3])
+            txs_list.append(row[4])
+        # close the cursor
+        conn.close()
+        # close the connection
+        conn.close()
+        
+        # loop through every user and wallet in list
+        for user, wallet, amount, timestamp, tx in zip(users_list, wallets_list, amounts_list, timestamps_list, txs_list):
+
+            # get wallet info via api
+            wallet_data = zet_etc.getAccountsData(wallet) 
+            # get latest payment info
+            latest_payment = wallet_data['payments'][0]
+            # do nothing if no payment data in db 
+            if (timestamp is None):
+                timestamp = 999999999999
+                uzer = self.bot.get_user(int(user))
+                await uzer.send("Hi, I have noticed that you added a new wallet to 'wallet_watch'. I will continue to monitor for any payouts.")
+            # if latest payment timestmp is newer than cached one     
+            elif (int(latest_payment['timestamp']) > int(timestamp)): 
+                # inform user about new payout via private message
+                amount = latest_payment['amount'] / (10**9)
+                tx = latest_payment['tx']
+                timestamp = latest_payment['timestamp']
+                dt_object = datetime.fromtimestamp(timestamp)
+                embed_message = discord.Embed(title = f"NEW PAYMENT!", description = f"Wallet: {wallet}", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/tx/{tx}")
+                embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
+                embed_message.add_field(name = "TX:", value = f"{tx}", inline = False) 
+                embed_message.add_field(name = "Amount:", value = f"{amount} ETC", inline = True) 
+                embed_message.set_footer(text = f"@{dt_object}")
                 # create user from cached_user string
-                user = self.bot.get_user(int(cached_user))
-                
-                # get wallet info via api
-                wallet_data = zet_etc.getAccountsData(self.cached_wallets[cached_user]['Wallet'])
-                
-                # get latest payment info
-                latest_payments = wallet_data['payments'][0]
-                # add new Payment entry if not present
-                if not 'Payment' in self.cached_wallets[cached_user]:
-                    self.cached_wallets[cached_user]['Payment'] = latest_payments
-                # compare timestamps of cached and new payments     
-                else:
-                    # if latest payment timestmp is newer than cached one 
-                    if (latest_payments['timestamp'] > self.cached_wallets[cached_user]['Payment']['timestamp']): 
-                        # inform user about new payout via private message
-                        amount = latest_payments['amount'] / (10**9)
-                        tx = latest_payments['tx']
-                        timestamp = latest_payments['timestamp']
-                        dt_object = datetime.fromtimestamp(timestamp)
-                        embed_message = discord.Embed(title = f"NEW PAYMENT!", description = f"Wallet: {self.cached_wallets[cached_user]['Wallet']}", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/tx/{tx}")
-                        embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
-                        embed_message.add_field(name = "TX:", value = f"{tx}", inline = False) 
-                        embed_message.add_field(name = "Amount:", value = f"{amount} ETC", inline = True) 
-                        embed_message.set_footer(text = f"@{dt_object}")
-                        # create user from cached_user string
-                        user = self.bot.get_user(int(cached_user))
-                        await user.send(embed = embed_message)
-                    # cache current payment
-                    self.cached_wallets[cached_user]['Payment'] = latest_payments
-                    
-                # get workers status info
-                workers_status = wallet_data['workers']
-                # add workers entry if not present
-                if not 'Workers' in self.cached_wallets[cached_user]:
-                    self.cached_wallets[cached_user]['Workers'] = workers_status
-                # compare statuses of cached and new data
-                else:
-                    # create embed
-                    send_embed = False
-                    embed_message = discord.Embed(title = f"WORKER OFFLINE!", description = f"Some workers went offline", color = discord.Color.red(), url = f"https://etc.zet-tech.eu/#/account/{self.cached_wallets[cached_user]['Wallet']}")
-                    # get the value of the "offline" key for each cached worker
-                    for name, status in self.cached_wallets[cached_user]['Workers'].items():
-                        # check if values are different from current call
-                        if workers_status[name].get('offline') != status['offline']:
-                            # if change was from online to offline
-                            if workers_status[name].get('offline') == True:
-                                embed_message.add_field(name = f"{name}", value = f"{status['offline']}", inline = False)
-                                send_embed = True
-                    if send_embed:
-                        # send list to user via private message   
-                        await user.send(embed = embed_message)
-                # cache current workers status
+                uzer = self.bot.get_user(int(user))
+                await uzer.send(embed = embed_message)
+             
+            # save current current payment info to db
+            # connect to database
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+            cur = conn.cursor() 
+            # insert current data to database, replace if already exists
+            cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, ?, ?, ?)""", (user, wallet, str(latest_payment['amount']), str(latest_payment['timestamp']), latest_payment['tx']))
+            # commit the changes to the database
+            conn.commit()
+            # close the connection
+            conn.close()        
+            '''    
+            # get workers status info
+            workers_status = wallet_data['workers']
+            # add workers entry if not present
+            if not 'Workers' in self.cached_wallets[cached_user]:
                 self.cached_wallets[cached_user]['Workers'] = workers_status
-        except:
-           pass
+            # compare statuses of cached and new data
+            else:
+                # create embed
+                send_embed = False
+                embed_message = discord.Embed(title = f"WORKER OFFLINE!", description = f"Some workers went offline", color = discord.Color.red(), url = f"https://etc.zet-tech.eu/#/account/{self.cached_wallets[cached_user]['Wallet']}")
+                # get the value of the "offline" key for each cached worker
+                for name, status in self.cached_wallets[cached_user]['Workers'].items():
+                    # check if values are different from current call
+                    if workers_status[name].get('offline') != status['offline']:
+                        # if change was from online to offline
+                        if workers_status[name].get('offline') == True:
+                            embed_message.add_field(name = f"{name}", value = f"{status['offline']}", inline = False)
+                            send_embed = True
+                if send_embed:
+                    # send list to user via private message   
+                    await user.send(embed = embed_message)
+            # cache current workers status
+            self.cached_wallets[cached_user]['Workers'] = workers_status
+            '''
         
     # check for new block    
     @tasks.loop(seconds = 60)
