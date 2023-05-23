@@ -49,6 +49,14 @@ cur.execute("""CREATE TABLE IF NOT EXISTS workers (
 # commit the changes to the database
 conn.commit()
 
+# create table for last block   
+cur.execute("""CREATE TABLE IF NOT EXISTS last_block (
+    height TEXT
+    )""")    
+    
+# commit the changes to the database
+conn.commit()
+
 # close the connection
 conn.close()
     
