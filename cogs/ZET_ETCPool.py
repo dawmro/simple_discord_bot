@@ -59,14 +59,7 @@ conn.commit()
 
 # close the connection
 conn.close()
-    
  
-cached_block_file = Path("data/json/cached_block.json")
-if not os.path.exists(cached_block_file):
-        with open(cached_block_file, "w+") as f:
-            f.write("{}") 
-            
-   
    
 class ZET_ETC:
     def __init__(self):
@@ -104,34 +97,15 @@ class ZET_ETC:
 class ZET_ETCPool(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # load cached block info from file
-        with open(cached_block_file, "r") as f:
-            try:
-                self.cached_block = json.load(f)
-            except JSONDecodeError:
-                pass
-
         self.new_block_check.start()
         self.watch_wallet_check.start()
-        self.bot.loop.create_task(self.save_cached())
     
     
     # trigger when class is ready
     @commands.Cog.listener()
     async def on_ready(self):
         print("ZET_ETCPool.py is ready")
-     
-     
-    # save current block height to cached block file    
-    async def save_cached(self):    
-        await self.bot.wait_until_ready()
-        while not self.bot.is_closed():
-            # save cached block
-            with open(cached_block_file, "w") as f:
-                json.dump(self.cached_block, f, indent=4)
-            # wait to prevent crashes
-            await asyncio.sleep(5)    
-    
+
     
     # add wallet to wallet_watch   
     @commands.command() 
