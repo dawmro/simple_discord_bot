@@ -66,7 +66,6 @@ if not os.path.exists(cached_block_file):
         with open(cached_block_file, "w+") as f:
             f.write("{}") 
             
-
    
    
 class ZET_ETC:
@@ -271,10 +270,26 @@ class ZET_ETCPool(commands.Cog):
     @tasks.loop(seconds = 60)
     async def new_block_check(self):
         await self.bot.wait_until_ready()
-        # add dummy block height to cached block if not present
-        if not "height" in self.cached_block: 
-            self.cached_block["height"] = 999999999999
         
+        # get cached height  from database
+        # connect to database
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        cur = conn.cursor() 
+        # get height from last_block table
+        cur.execute("SELECT height FROM last_block")
+        result = cur.fetchone()
+        # close the connection
+        conn.close()  
+        
+        # check if result is not empty
+        cached_height = 0
+        if result is None:
+            # create dummy block height 
+            cached_height = 999999999999
+        else:
+            cached_height = int(result[0])
+
+        # get block info via api
         zet_etc = ZET_ETC()
         pool_blocks_data = zet_etc.getBlocksData()
         
@@ -287,14 +302,11 @@ class ZET_ETCPool(commands.Cog):
         variance = int(round(latest_matured['variance'] * 100))
         timestamp = latest_matured['timestamp']
         dt_object = datetime.fromtimestamp(timestamp)
-        
-        #for guild in self.bot.guilds:
-        #    for channel in guild.text_channels:
-        
+    
         # get correct channel
         channel = self.bot.get_channel(ZETPOOL_CHANNEL_ID)
         # send message to the channel when new block arrives
-        if height > self.cached_block["height"]:
+        if height > cached_height:
             # create embed
             embed_message = discord.Embed(title = f"NEW BLOCK!", description = f"For ETC ZETpool", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/block/{hash}/transactions")
             embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
@@ -308,8 +320,16 @@ class ZET_ETCPool(commands.Cog):
             # send it
             await channel.send(embed = embed_message)
                     
-        # cache current block height
-        self.cached_block["height"] = height 
+        # save block height info to db
+        # connect to database
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        cur = conn.cursor() 
+        # insert current data to database, replace if already exists
+        cur.execute("""INSERT OR REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
+        # commit the changes to the database
+        conn.commit()
+        # close the connection
+        conn.close()        
       
       
     # get block info    
