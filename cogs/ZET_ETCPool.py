@@ -215,7 +215,6 @@ class ZET_ETCPool(commands.Cog):
             # close the connection
             conn.close() 
             
-             
             # get workers status info
             workers_status = wallet_data['workers']
             
@@ -231,6 +230,8 @@ class ZET_ETCPool(commands.Cog):
             for row in cur.fetchall():
                 workers_id_list.append(row[0])
                 offline_list.append(row[1])
+            # close the connection
+            conn.close() 
             
             # do nothing if no workers data in db 
             if len(workers_id_list) < 1:
