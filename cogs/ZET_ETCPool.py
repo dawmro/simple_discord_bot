@@ -51,7 +51,7 @@ conn.commit()
 
 # create table for last block   
 cur.execute("""CREATE TABLE IF NOT EXISTS last_block (
-    height TEXT
+    height TEXT PRIMARY KEY
     )""")    
     
 # commit the changes to the database
@@ -231,6 +231,7 @@ class ZET_ETCPool(commands.Cog):
             for row in cur.fetchall():
                 workers_id_list.append(row[0])
                 offline_list.append(row[1])
+            
             # do nothing if no workers data in db 
             if len(workers_id_list) < 1:
                 uzer = self.bot.get_user(int(user))
