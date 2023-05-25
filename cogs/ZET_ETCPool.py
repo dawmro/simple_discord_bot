@@ -22,7 +22,7 @@ if not os.path.exists(db_path):
     os.makedirs(db_path)
 
 # connect to database
-conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
 cur = conn.cursor() 
 
 # create table for discord_users
@@ -33,9 +33,6 @@ cur.execute("""CREATE TABLE IF NOT EXISTS discord_users (
     payout_timestamp TEXT,
     payout_tx TEXT
     )""")
-
-# commit the changes to the database
-conn.commit()
     
 # create table for workers with worker id as primary key and user id as foreign key   
 cur.execute("""CREATE TABLE IF NOT EXISTS workers (
@@ -45,9 +42,6 @@ cur.execute("""CREATE TABLE IF NOT EXISTS workers (
     PRIMARY KEY (wallet_number, worker_id),
     FOREIGN KEY (wallet_number) REFERENCES users (wallet_number)
     )""")    
-    
-# commit the changes to the database
-conn.commit()
 
 # create table for last block   
 cur.execute("""CREATE TABLE IF NOT EXISTS last_block (
@@ -114,7 +108,7 @@ class ZET_ETCPool(commands.Cog):
         author_id = str(ctx.author.id)
         
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
         cur = conn.cursor() 
         # insert author_ad and wallet to database, replace wqallet if already exists
         cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, NULL, NULL, NULL)""", (author_id, wallet))
@@ -134,7 +128,7 @@ class ZET_ETCPool(commands.Cog):
         author_id = str(ctx.author.id)
         
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
         cur = conn.cursor() 
         cur.execute("""DELETE FROM discord_users WHERE user_id = ? AND EXISTS (SELECT 1 FROM discord_users WHERE user_id = ?)""", (author_id, author_id))
         # commit the changes to the database
@@ -154,7 +148,7 @@ class ZET_ETCPool(commands.Cog):
         zet_etc = ZET_ETC()
         
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
         cur = conn.cursor() 
         # get everything from discord_users database
         cur.execute("""SELECT user_id, wallet_number, payout_amount, payout_timestamp, payout_tx FROM discord_users""")
@@ -171,10 +165,8 @@ class ZET_ETCPool(commands.Cog):
             amounts_list.append(row[2])
             timestamps_list.append(row[3])
             txs_list.append(row[4])
-        # close the cursor
-        conn.close()
         # close the connection
-        conn.close()
+        conn.close() 
         
         # loop through every user and wallet in list
         for user, wallet, amount, timestamp, tx in zip(users_list, wallets_list, amounts_list, timestamps_list, txs_list):
@@ -206,7 +198,7 @@ class ZET_ETCPool(commands.Cog):
              
             # save current current payment info to db
             # connect to database
-            conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
             cur = conn.cursor() 
             # insert current data to database, replace if already exists
             cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, ?, ?, ?)""", (user, wallet, str(latest_payment['amount']), str(latest_payment['timestamp']), latest_payment['tx']))
@@ -219,7 +211,7 @@ class ZET_ETCPool(commands.Cog):
             workers_status = wallet_data['workers']
             
             # connect to database
-            conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
             cur = conn.cursor() 
             # get workers info for current wallet from workers table
             cur.execute("""SELECT worker_id, offline FROM workers WHERE workers.wallet_number = ?""", (wallet,))
@@ -254,9 +246,17 @@ class ZET_ETCPool(commands.Cog):
                     # send list to user via private message
                     uzer = self.bot.get_user(int(user))                    
                     await uzer.send(embed = embed_message)
+                    
+            # connect to database
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+            cur = conn.cursor() 
             # save current workers info to db
-            
-            
+            for name in workers_status.items():
+                cur.execute("""INSERT OR REPLACE INTO workers (wallet_number, worker_id, offline) VALUES (?, ?, ?)""", (wallet, str(name[0]), workers_status[name[0]].get('offline')))
+            # commit the changes to the database
+            conn.commit()
+            # close the connection
+            conn.close() 
         
     # check for new block    
     @tasks.loop(seconds = 60)
@@ -265,13 +265,13 @@ class ZET_ETCPool(commands.Cog):
         
         # get cached height  from database
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
         cur = conn.cursor() 
         # get height from last_block table
         cur.execute("SELECT height FROM last_block")
         result = cur.fetchone()
         # close the connection
-        conn.close()  
+        conn.close() 
         
         # check if result is not empty
         cached_height = 0
@@ -314,7 +314,7 @@ class ZET_ETCPool(commands.Cog):
                     
         # save block height info to db
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
         cur = conn.cursor() 
         # insert current data to database, replace if already exists
         cur.execute("""INSERT OR REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
