@@ -187,7 +187,7 @@ class ZET_ETCPool(commands.Cog):
             if (timestamp is None):
                 timestamp = 999999999999
                 uzer = self.bot.get_user(int(user))
-                await uzer.send("Hi, I have noticed that you added a new wallet to 'wallet_watch'. I will continue to monitor for any payouts.")
+                await uzer.send("Starting to monitor for any payouts...")
             # if latest payment timestmp is newer than cached one     
             elif (int(latest_payment['timestamp']) > int(timestamp)): 
                 # inform user about new payout via private message
@@ -213,32 +213,48 @@ class ZET_ETCPool(commands.Cog):
             # commit the changes to the database
             conn.commit()
             # close the connection
-            conn.close()        
-            '''    
+            conn.close() 
+            
+             
             # get workers status info
             workers_status = wallet_data['workers']
-            # add workers entry if not present
-            if not 'Workers' in self.cached_wallets[cached_user]:
-                self.cached_wallets[cached_user]['Workers'] = workers_status
+            
+            # connect to database
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db")
+            cur = conn.cursor() 
+            # get workers info for current wallet from workers table
+            cur.execute("""SELECT worker_id, offline FROM workers WHERE workers.wallet_number = ?""", (wallet,))
+            # create empty lists for data
+            workers_id_list = []
+            offline_list = []
+            # put data into lists
+            for row in cur.fetchall():
+                workers_id_list.append(row[0])
+                offline_list.append(row[1])
+            # do nothing if no workers data in db 
+            if len(workers_id_list) < 1:
+                uzer = self.bot.get_user(int(user))
+                await uzer.send("Starting to monitor for workers that recently went offline...")
             # compare statuses of cached and new data
             else:
                 # create embed
                 send_embed = False
-                embed_message = discord.Embed(title = f"WORKER OFFLINE!", description = f"Some workers went offline", color = discord.Color.red(), url = f"https://etc.zet-tech.eu/#/account/{self.cached_wallets[cached_user]['Wallet']}")
+                embed_message = discord.Embed(title = f"WORKER OFFLINE!", description = f"Some workers went offline", color = discord.Color.red(), url = f"https://etc.zet-tech.eu/#/account/{wallet}")
                 # get the value of the "offline" key for each cached worker
-                for name, status in self.cached_wallets[cached_user]['Workers'].items():
+                for worker_id, offline in zip(workers_id_list, offline_list):
                     # check if values are different from current call
-                    if workers_status[name].get('offline') != status['offline']:
+                    if workers_status[worker_id].get('offline') != offline:
                         # if change was from online to offline
-                        if workers_status[name].get('offline') == True:
-                            embed_message.add_field(name = f"{name}", value = f"{status['offline']}", inline = False)
+                        if workers_status[worker_id].get('offline') == True:
+                            embed_message.add_field(name = f"{worker_id}", value = f"{offline}", inline = False)
                             send_embed = True
                 if send_embed:
-                    # send list to user via private message   
-                    await user.send(embed = embed_message)
-            # cache current workers status
-            self.cached_wallets[cached_user]['Workers'] = workers_status
-            '''
+                    # send list to user via private message
+                    uzer = self.bot.get_user(int(user))                    
+                    await uzer.send(embed = embed_message)
+            # save current workers info to db
+            
+            
         
     # check for new block    
     @tasks.loop(seconds = 60)
