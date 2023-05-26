@@ -300,7 +300,6 @@ class ZET_ETCPool(commands.Cog):
             # get correct channel
             channel = self.bot.get_channel(ZETPOOL_CHANNEL_ID)
             # send message to the channel when new block arrives
-            print(height, cached_height)
             if int(height) > int(cached_height):
                 # create embed
                 embed_message = discord.Embed(title = f"NEW BLOCK!", description = f"For ETC ZETpool", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/block/{hash}/transactions")
