@@ -236,10 +236,10 @@ class ZET_ETCPool(commands.Cog):
                     embed_message = discord.Embed(title = f"WORKER OFFLINE!", description = f"Some workers went offline", color = discord.Color.red(), url = f"https://etc.zet-tech.eu/#/account/{wallet}")
                     # get the value of the "offline" key for each cached worker
                     for worker_id, offline in zip(workers_id_list, offline_list):
-                        # check if values are different from current call
-                        if workers_status[worker_id].get('offline') != offline:
-                            # if change was from online to offline
-                            if workers_status[worker_id].get('offline') == True:
+                        # check if values are different from current call, use deafult worker_id in case it no longer exists
+                        if workers_status.get(worker_id, {}).get('offline') != offline:
+                            # if change was from online to offline, use deafult worker_id in case it no longer exists
+                            if workers_status.get(worker_id, {}).get('offline') == True:
                                 embed_message.add_field(name = f"{worker_id}", value = f"{offline}", inline = False)
                                 send_embed = True
                     if send_embed:
