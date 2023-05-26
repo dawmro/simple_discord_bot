@@ -300,7 +300,8 @@ class ZET_ETCPool(commands.Cog):
             # get correct channel
             channel = self.bot.get_channel(ZETPOOL_CHANNEL_ID)
             # send message to the channel when new block arrives
-            if height > cached_height:
+            print(height, cached_height)
+            if int(height) > int(cached_height):
                 # create embed
                 embed_message = discord.Embed(title = f"NEW BLOCK!", description = f"For ETC ZETpool", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/block/{hash}/transactions")
                 embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
@@ -319,7 +320,7 @@ class ZET_ETCPool(commands.Cog):
             conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
             cur = conn.cursor() 
             # insert current data to database, replace if already exists
-            cur.execute("""INSERT OR REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
+            cur.execute("""REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
             # commit the changes to the database
             conn.commit()
             # close the connection
