@@ -355,6 +355,8 @@ class ZET_ETCPool(commands.Cog):
             try:
                 conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
                 cur = conn.cursor() 
+                # delete all data from table
+                cur.execute("""DELETE FROM last_block""")
                 # insert current data to database, replace if already exists
                 cur.execute("""REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
                 # commit the changes to the database
