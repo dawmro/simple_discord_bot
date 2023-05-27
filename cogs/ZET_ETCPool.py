@@ -165,25 +165,29 @@ class ZET_ETCPool(commands.Cog):
         zet_etc = ZET_ETC()
         
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-        cur = conn.cursor() 
-        # get everything from discord_users database
-        cur.execute("""SELECT user_id, wallet_number, payout_amount, payout_timestamp, payout_tx FROM discord_users""")
-        # create empty lists for data
-        users_list = []
-        wallets_list = []
-        amounts_list = []
-        timestamps_list = []
-        txs_list = []
-        # put data into lists
-        for row in cur.fetchall():
-            users_list.append(row[0])
-            wallets_list.append(row[1])
-            amounts_list.append(row[2])
-            timestamps_list.append(row[3])
-            txs_list.append(row[4])
-        # close the connection
-        conn.close() 
+        try:
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+            cur = conn.cursor() 
+            # get everything from discord_users database
+            cur.execute("""SELECT user_id, wallet_number, payout_amount, payout_timestamp, payout_tx FROM discord_users""")
+            # create empty lists for data
+            users_list = []
+            wallets_list = []
+            amounts_list = []
+            timestamps_list = []
+            txs_list = []
+            # put data into lists
+            for row in cur.fetchall():
+                users_list.append(row[0])
+                wallets_list.append(row[1])
+                amounts_list.append(row[2])
+                timestamps_list.append(row[3])
+                txs_list.append(row[4])
+            # close the connection
+            conn.close()
+        except Exception as e:
+            print(f"Database error: {e}")
+            return    
         
         # loop through every user and wallet in list
         for user, wallet, amount, timestamp, tx in zip(users_list, wallets_list, amounts_list, timestamps_list, txs_list):
@@ -216,32 +220,40 @@ class ZET_ETCPool(commands.Cog):
                  
                 # save current current payment info to db
                 # connect to database
-                conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-                cur = conn.cursor() 
-                # insert current data to database, replace if already exists
-                cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, ?, ?, ?)""", (user, wallet, str(latest_payment['amount']), str(latest_payment['timestamp']), latest_payment['tx']))
-                # commit the changes to the database
-                conn.commit()
-                # close the connection
-                conn.close() 
-                
+                try:
+                    conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+                    cur = conn.cursor() 
+                    # insert current data to database, replace if already exists
+                    cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, ?, ?, ?)""", (user, wallet, str(latest_payment['amount']), str(latest_payment['timestamp']), latest_payment['tx']))
+                    # commit the changes to the database
+                    conn.commit()
+                    # close the connection
+                    conn.close() 
+                except Exception as e:
+                    print(f"Database error: {e}")
+                    return  
+                    
                 # get workers status info
                 workers_status = wallet_data['workers']
                 
                 # connect to database
-                conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-                cur = conn.cursor() 
-                # get workers info for current wallet from workers table
-                cur.execute("""SELECT worker_id, offline FROM workers WHERE workers.wallet_number = ?""", (wallet,))
-                # create empty lists for data
-                workers_id_list = []
-                offline_list = []
-                # put data into lists
-                for row in cur.fetchall():
-                    workers_id_list.append(row[0])
-                    offline_list.append(row[1])
-                # close the connection
-                conn.close() 
+                try:
+                    conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+                    cur = conn.cursor() 
+                    # get workers info for current wallet from workers table
+                    cur.execute("""SELECT worker_id, offline FROM workers WHERE workers.wallet_number = ?""", (wallet,))
+                    # create empty lists for data
+                    workers_id_list = []
+                    offline_list = []
+                    # put data into lists
+                    for row in cur.fetchall():
+                        workers_id_list.append(row[0])
+                        offline_list.append(row[1])
+                    # close the connection
+                    conn.close() 
+                except Exception as e:
+                    print(f"Database error: {e}")
+                    return  
                 
                 # do nothing if no workers data in db 
                 if len(workers_id_list) < 1:
@@ -266,16 +278,19 @@ class ZET_ETCPool(commands.Cog):
                         await uzer.send(embed = embed_message)
                         
                 # connect to database
-                conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-                cur = conn.cursor() 
-                # save current workers info to db
-                for name in workers_status.items():
-                    cur.execute("""INSERT OR REPLACE INTO workers (wallet_number, worker_id, offline) VALUES (?, ?, ?)""", (wallet, str(name[0]), workers_status[name[0]].get('offline')))
-                # commit the changes to the database
-                conn.commit()
-                # close the connection
-                conn.close() 
-
+                try:
+                    conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+                    cur = conn.cursor() 
+                    # save current workers info to db
+                    for name in workers_status.items():
+                        cur.execute("""INSERT OR REPLACE INTO workers (wallet_number, worker_id, offline) VALUES (?, ?, ?)""", (wallet, str(name[0]), workers_status[name[0]].get('offline')))
+                    # commit the changes to the database
+                    conn.commit()
+                    # close the connection
+                    conn.close() 
+                except Exception as e:
+                    print(f"Database error: {e}")
+                    return 
         
     # check for new block    
     @tasks.loop(seconds = 60)
@@ -284,13 +299,17 @@ class ZET_ETCPool(commands.Cog):
         
         # get cached height  from database
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-        cur = conn.cursor() 
-        # get height from last_block table
-        cur.execute("SELECT height FROM last_block")
-        result = cur.fetchone()
-        # close the connection
-        conn.close() 
+        try:
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+            cur = conn.cursor() 
+            # get height from last_block table
+            cur.execute("SELECT height FROM last_block")
+            result = cur.fetchone()
+            # close the connection
+            conn.close() 
+        except Exception as e:
+            print(f"Database error: {e}")
+            return 
         
         # check if result is not empty
         cached_height = 0
@@ -333,15 +352,18 @@ class ZET_ETCPool(commands.Cog):
                         
             # save block height info to db
             # connect to database
-            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-            cur = conn.cursor() 
-            # insert current data to database, replace if already exists
-            cur.execute("""REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
-            # commit the changes to the database
-            conn.commit()
-            # close the connection
-            conn.close()        
-
+            try:
+                conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+                cur = conn.cursor() 
+                # insert current data to database, replace if already exists
+                cur.execute("""REPLACE INTO last_block (height) VALUES (?)""", (str(height),))
+                # commit the changes to the database
+                conn.commit()
+                # close the connection
+                conn.close()        
+            except Exception as e:
+                print(f"Database error: {e}")
+                return 
       
     # get block info    
     @commands.command()
