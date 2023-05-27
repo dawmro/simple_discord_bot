@@ -130,7 +130,8 @@ class ZET_ETCPool(commands.Cog):
             return
     
         await ctx.channel.send(f"Watch_Wallet Active!")
-
+        uzer = self.bot.get_user(int(author_id))
+        await uzer.send(f"Watch_Wallet For {wallet} Active!")
     
     # remove wallet from wallet_watch   
     @commands.command() 
