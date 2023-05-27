@@ -63,8 +63,7 @@ class Price(commands.Cog):
         embed_message.add_field(name = "Price change:", value = f"1h: {percent_change_1h}% | 24h: {percent_change_24h}% | 30d: {percent_change_30d}% | 90d: {percent_change_90d}%", inline = False)
         embed_message.set_footer(text = f"@{last_updated}") 
         
-        await ctx.channel.send(embed = embed_message, delete_after=60.0)
-        await ctx.message.delete()
+        await ctx.channel.send(embed = embed_message)
    
    
 async def setup(bot):
