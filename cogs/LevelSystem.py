@@ -76,7 +76,7 @@ class LevelSystem(commands.Cog):
         if self.level_up(author_id):
             level_up_embed = discord.Embed(title="Level Up!", color=discord.Color.blue())
             level_up_embed.add_field(name="Congratulations", value=f"{message.author.mention} has just leveled up to level {self.users[author_id]['Level']}!")
-            await message.channel.send(embed=level_up_embed, delete_after=60.0)
+            await message.channel.send(embed=level_up_embed)
     
     # check current level / exp
     @commands.command(aliases=["lvl", "experience", "exp"])
@@ -98,8 +98,7 @@ class LevelSystem(commands.Cog):
         level_card.add_field(name="Experience:", value = user_exp)
         level_card.set_footer(text=f"Experience needed to level up: {user_exp_needed_for_next_lvl}")
         
-        await ctx.send(embed=level_card, delete_after=60.0)
-        await ctx.message.delete()
+        await ctx.send(embed=level_card)
     
     
 async def setup(bot):
