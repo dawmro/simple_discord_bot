@@ -74,6 +74,7 @@ class ZET_ETC:
             return data
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             print(e)
+            return None
     
     
     # get json for account
@@ -84,7 +85,8 @@ class ZET_ETC:
             data = r.json()
             return data
         except (ConnectionError, Timeout, TooManyRedirects) as e:
-            print(e)            
+            print(e)   
+            return None
     
 
 
@@ -170,9 +172,10 @@ class ZET_ETCPool(commands.Cog):
         
         # loop through every user and wallet in list
         for user, wallet, amount, timestamp, tx in zip(users_list, wallets_list, amounts_list, timestamps_list, txs_list):
-            try:
-                # get wallet info via api
-                wallet_data = zet_etc.getAccountsData(wallet) 
+            
+            # get wallet info via api
+            wallet_data = zet_etc.getAccountsData(wallet)
+            if wallet_data != None:
                 # get latest payment info
                 latest_payment = wallet_data['payments'][0]
                 # do nothing if no payment data in db 
@@ -257,36 +260,35 @@ class ZET_ETCPool(commands.Cog):
                 conn.commit()
                 # close the connection
                 conn.close() 
-            except Exception as e:
-                print(f"watch_wallet_check, The error is: ",e)
+
         
     # check for new block    
     @tasks.loop(seconds = 60)
     async def new_block_check(self):
         await self.bot.wait_until_ready()
-        try:
-            # get cached height  from database
-            # connect to database
-            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-            cur = conn.cursor() 
-            # get height from last_block table
-            cur.execute("SELECT height FROM last_block")
-            result = cur.fetchone()
-            # close the connection
-            conn.close() 
-            
-            # check if result is not empty
-            cached_height = 0
-            if result is None:
-                # create dummy block height 
-                cached_height = 999999999999
-            else:
-                cached_height = int(result[0])
+        
+        # get cached height  from database
+        # connect to database
+        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+        cur = conn.cursor() 
+        # get height from last_block table
+        cur.execute("SELECT height FROM last_block")
+        result = cur.fetchone()
+        # close the connection
+        conn.close() 
+        
+        # check if result is not empty
+        cached_height = 0
+        if result is None:
+            # create dummy block height 
+            cached_height = 999999999999
+        else:
+            cached_height = int(result[0])
 
-            # get block info via api
-            zet_etc = ZET_ETC()
-            pool_blocks_data = zet_etc.getBlocksData()
-            
+        # get block info via api
+        zet_etc = ZET_ETC()
+        pool_blocks_data = zet_etc.getBlocksData()
+        if pool_blocks_data != None:
             latest_matured = pool_blocks_data['matured'][0]
             hash = latest_matured['hash']
             height = latest_matured['height']
@@ -324,16 +326,15 @@ class ZET_ETCPool(commands.Cog):
             conn.commit()
             # close the connection
             conn.close()        
-        except Exception as e:
-            print(f"new_block_check, The error is: ",e)
+
       
     # get block info    
     @commands.command()
     async def block(self, ctx, description = "get info about latest ETC block mined by pool, usage example: !block"):
-        try:
-            zet_etc = ZET_ETC()
-            pool_blocks_data = zet_etc.getBlocksData()
-            
+        
+        zet_etc = ZET_ETC()
+        pool_blocks_data = zet_etc.getBlocksData()
+        if pool_blocks_data != None:
             latest_matured = pool_blocks_data['matured'][0]
             hash = latest_matured['hash']
             height = latest_matured['height']
@@ -357,18 +358,15 @@ class ZET_ETCPool(commands.Cog):
             
             await ctx.channel.send(embed = embed_message, delete_after=60.0)
             await ctx.message.delete()
-        except Exception as e:
-            print(f"block, The error is: ",e)
-            await ctx.channel.send(e, delete_after=60.0)
-            await ctx.message.delete()
+
     
     # get payment info    
     @commands.command(aliases=["payout"])
     async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !payment 0x6030c8112e68396416e98f8eeaabfade426e472b"):
-        try:
-            zet_etc = ZET_ETC()
-            wallet_payments_data = zet_etc.getAccountsData(wallet)
-
+        
+        zet_etc = ZET_ETC()
+        wallet_payments_data = zet_etc.getAccountsData(wallet)
+        if wallet_payments_data != None:
             latest_payments = wallet_payments_data['payments'][0]
             amount = latest_payments['amount'] / (10**9)
             tx = latest_payments['tx']
@@ -384,11 +382,8 @@ class ZET_ETCPool(commands.Cog):
             
             await ctx.channel.send(embed = embed_message, delete_after=60.0)
             await ctx.message.delete()
-            
-        except Exception as e:
-            print(f"block, The error is: ",e)
-            await ctx.channel.send(e, delete_after=60.0)
-            await ctx.message.delete()
+        
+
 
 
 async def setup(bot):
