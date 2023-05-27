@@ -27,8 +27,7 @@ class CommandErrorHandler(commands.Cog):
         if isinstance(error, commands.CommandNotFound):
             embed_message.set_image(url = "https://media.tenor.com/Z21orJsHOGoAAAAC/are-you-sure-john-cena.gif")
             
-        await ctx.channel.send(embed = embed_message, delete_after=60.0)
-        await ctx.message.delete()
+        await ctx.channel.send(embed = embed_message)
            
     
 async def setup(bot):
