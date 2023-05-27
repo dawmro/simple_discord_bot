@@ -119,8 +119,7 @@ class ZET_ETCPool(commands.Cog):
         # close the connection
         conn.close()
         
-        await ctx.channel.send(f"Watch_Wallet For {wallet} Active!", delete_after=60.0)
-        await ctx.message.delete()
+        await ctx.channel.send(f"Watch_Wallet For {wallet} Active!")
     
     
     # remove wallet from wallet_watch   
@@ -137,7 +136,7 @@ class ZET_ETCPool(commands.Cog):
         conn.commit()
         # close the connection
         conn.close()
-        await ctx.channel.send(f"Watch_Wallet Deactivated!", delete_after=60.0)
+        await ctx.channel.send(f"Watch_Wallet Deactivated!")
        
        
     # check watch_wallet status   
@@ -356,8 +355,7 @@ class ZET_ETCPool(commands.Cog):
             embed_message.add_field(name = "Variance:", value = f"{variance}%", inline = True)
             embed_message.set_footer(text = f"@{dt_object}") 
             
-            await ctx.channel.send(embed = embed_message, delete_after=60.0)
-            await ctx.message.delete()
+            await ctx.channel.send(embed = embed_message)
 
     
     # get payment info    
@@ -380,8 +378,8 @@ class ZET_ETCPool(commands.Cog):
             embed_message.add_field(name = "Amount:", value = f"{amount} ETC", inline = True) 
             embed_message.set_footer(text = f"@{dt_object}") 
             
-            await ctx.channel.send(embed = embed_message, delete_after=60.0)
-            await ctx.message.delete()
+            await ctx.channel.send(embed = embed_message)
+
         
 
 
