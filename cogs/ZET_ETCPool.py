@@ -110,23 +110,27 @@ class ZET_ETCPool(commands.Cog):
         # get user id
         author_id = str(ctx.author.id)
         
-        # validate wallet parameter
+        # validate wallet 
         if not eth_utils.is_address(wallet):
             await ctx.channel.send(f"Invalid ETC address: {wallet}")
             return
         
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-        cur = conn.cursor() 
-        # insert author_ad and wallet to database, replace wqallet if already exists
-        cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, NULL, NULL, NULL)""", (author_id, wallet))
-        # commit the changes to the database
-        conn.commit()
-        # close the connection
-        conn.close()
-        
-        await ctx.channel.send(f"Watch_Wallet For {wallet} Active!")
+        try:
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+            cur = conn.cursor() 
+            # insert author_ad and wallet to database, replace wqallet if already exists
+            cur.execute("""INSERT OR REPLACE INTO discord_users (user_id, wallet_number, payout_amount, payout_timestamp, payout_tx) VALUES (?, ?, NULL, NULL, NULL)""", (author_id, wallet))
+            # commit the changes to the database
+            conn.commit()
+            # close the connection
+            conn.close()
+        except Exception as e:
+            await ctx.channel.send(f"Database error: {e}")
+            return
     
+        await ctx.channel.send(f"Watch_Wallet Active!")
+
     
     # remove wallet from wallet_watch   
     @commands.command() 
