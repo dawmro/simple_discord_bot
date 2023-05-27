@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import datetime
 import asyncio
 import sqlite3
+import eth_utils
 
 # load variables from .env file
 dotenv_path = Path('.env')
@@ -108,6 +109,11 @@ class ZET_ETCPool(commands.Cog):
     async def add_watch_wallet(self, ctx, wallet, description = "add wallet to watch list to get notifications, usage example: !add_watch_wallet 0x6030c8112e68396416e98f8eeaabfade426e472b"):
         # get user id
         author_id = str(ctx.author.id)
+        
+        # validate wallet parameter
+        if not eth_utils.is_address(wallet):
+            await ctx.channel.send(f"Invalid ETC address: {wallet}")
+            return
         
         # connect to database
         conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
