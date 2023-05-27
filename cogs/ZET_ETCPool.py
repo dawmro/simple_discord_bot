@@ -140,13 +140,18 @@ class ZET_ETCPool(commands.Cog):
         author_id = str(ctx.author.id)
         
         # connect to database
-        conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
-        cur = conn.cursor() 
-        cur.execute("""DELETE FROM discord_users WHERE user_id = ? AND EXISTS (SELECT 1 FROM discord_users WHERE user_id = ?)""", (author_id, author_id))
-        # commit the changes to the database
-        conn.commit()
-        # close the connection
-        conn.close()
+        try:
+            conn = sqlite3.connect("data/db/ZET_ETCPool.db", timeout = 30.0)
+            cur = conn.cursor() 
+            cur.execute("""DELETE FROM discord_users WHERE user_id = ? AND EXISTS (SELECT 1 FROM discord_users WHERE user_id = ?)""", (author_id, author_id))
+            # commit the changes to the database
+            conn.commit()
+            # close the connection
+            conn.close()
+        except Exception as e:
+            await ctx.channel.send(f"Database error: {e}")
+            return    
+         
         await ctx.channel.send(f"Watch_Wallet Deactivated!")
        
        
