@@ -70,7 +70,7 @@ class ZET_ETC:
     def getBlocksData(self):
         url = self.api_url + '/api/blocks'
         try:
-            r = self.session.get(url)
+            r = self.session.get(url, timeout = 5)
             data = r.json()
             return data
         except (ConnectionError, Timeout, TooManyRedirects) as e:
@@ -82,7 +82,7 @@ class ZET_ETC:
     def getAccountsData(self, wallet):
         url = self.api_url + '/api/accounts/'+wallet
         try:
-            r = self.session.get(url)
+            r = self.session.get(url, timeout = 5)
             data = r.json()
             return data
         except (ConnectionError, Timeout, TooManyRedirects) as e:
@@ -188,7 +188,7 @@ class ZET_ETCPool(commands.Cog):
         except Exception as e:
             print(f"Database error: {e}")
             return    
-        
+
         # loop through every user and wallet in list
         for user, wallet, amount, timestamp, tx in zip(users_list, wallets_list, amounts_list, timestamps_list, txs_list):
             

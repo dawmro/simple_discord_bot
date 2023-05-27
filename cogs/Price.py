@@ -30,7 +30,7 @@ class CMC:
         url = self.api_url + '/v1/cryptocurrency/quotes/latest'
         parameters = {'symbol': symbol}
         try:
-            r = self.session.get(url, params = parameters)
+            r = self.session.get(url, params = parameters, timeout = 5)
             data = r.json()['data']
             return data
         except (ConnectionError, Timeout, TooManyRedirects) as e:
