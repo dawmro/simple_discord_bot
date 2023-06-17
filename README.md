@@ -14,3 +14,5 @@ Discord bot that can:
 * notify user about offline worker on mining pool
 
 ![alt text](https://github.com/dawmro/simple_discord_bot/blob/main/screenshot1.PNG?raw=true)
+
+![alt text](https://github.com/dawmro/simple_discord_bot/blob/main/screenshot2.PNG?raw=true)
