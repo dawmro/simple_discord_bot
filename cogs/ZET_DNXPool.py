@@ -92,16 +92,16 @@ class ZET_DNX:
             return None
     
     
-    # # get json for account
-    # def getAccountsData(self, wallet):
-    #     url = self.api_url + '/api/accounts/'+wallet
-    #     try:
-    #         r = self.session.get(url, timeout = 5)
-    #         data = r.json()
-    #         return data
-    #     except (ConnectionError, Timeout, TooManyRedirects) as e:
-    #         print(e)   
-    #         return None
+    # get json for account
+    def getAccountsData(self, wallet):
+        url = self.api_url + '/api/stats_address?address='+wallet
+        try:
+            r = self.session.get(url, timeout = 15)
+            data = r.json()
+            return data
+        except (ConnectionError, Timeout, TooManyRedirects) as e:
+            print(e)   
+            return None
     
 
 
@@ -397,27 +397,27 @@ class ZET_DNXPool(commands.Cog):
             await ctx.channel.send(embed = embed_message)
 
     
-    # # get payment info    
-    # @commands.command(aliases=["payout"])
-    # async def payment(self, ctx, wallet: str, description = "get info about latest payout to given ETC wallet, usage example: !payment 0x6030c8112e68396416e98f8eeaabfade426e472b"):
+    # get payment info    
+    @commands.command(aliases=["payout_dnx"])
+    async def payment_dnx(self, ctx, wallet: str, description = "get info about latest payout to given DNX wallet, usage example: !payment XwnVL1fhhpqKVmaprRLjprHCkrh6vWsVVcWmhywa1YRjh6RS9gPGe5eTDgnM4X3qjsZrgfgojbnGEZRVepMAQYce28baMTS8z"):
         
-    #     zet_etc = ZET_ETC()
-    #     wallet_payments_data = zet_etc.getAccountsData(wallet)
-    #     if wallet_payments_data != None:
-    #         latest_payments = wallet_payments_data['payments'][0]
-    #         amount = latest_payments['amount'] / (10**9)
-    #         tx = latest_payments['tx']
-    #         timestamp = latest_payments['timestamp']
-    #         dt_object = datetime.fromtimestamp(timestamp)
+        zet_dnx = ZET_DNX()
+        wallet_payments_data = zet_dnx.getAccountsData(wallet)
+        if wallet_payments_data != None:
+            latest_payments = wallet_payments_data['payments']
+            amount = float((latest_payments[0]).split(":", -1)[1]) / (10**9)
+            tx = (latest_payments[0]).split(":", -1)[0]
+            timestamp = int(latest_payments[1])
+            dt_object = datetime.fromtimestamp(timestamp)
             
-    #         embed_message = discord.Embed(title = f"LATEST PAYMENT INFO", description = f"Wallet: {wallet}", color = discord.Color.green(), url = f"https://blockscout.com/etc/mainnet/tx/{tx}")
-    #         embed_message.set_author(name = f"Requested by {ctx.author}", icon_url = ctx.author.avatar)
-    #         embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/1321.png")
-    #         embed_message.add_field(name = "TX:", value = f"{tx}", inline = False) 
-    #         embed_message.add_field(name = "Amount:", value = f"{amount} ETC", inline = True) 
-    #         embed_message.set_footer(text = f"@{dt_object}") 
+            embed_message = discord.Embed(title = f"LATEST PAYMENT INFO", description = f"Wallet: {wallet}", color = discord.Color.green(), url = f"https://zetpool.org/dnx/?Dynex={wallet}#worker_stats")
+            embed_message.set_author(name = f"Requested by {ctx.author}", icon_url = ctx.author.avatar)
+            embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/22858.png")
+            embed_message.add_field(name = "TX:", value = f"{tx}", inline = False) 
+            embed_message.add_field(name = "Amount:", value = f"{amount} DNX", inline = True) 
+            embed_message.set_footer(text = f"@{dt_object}") 
             
-    #         await ctx.channel.send(embed = embed_message)
+            await ctx.channel.send(embed = embed_message)
 
         
 
