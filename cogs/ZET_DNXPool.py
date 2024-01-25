@@ -371,7 +371,30 @@ class ZET_DNXPool(commands.Cog):
                 print(f"Database error: {e}")
                 return 
       
+    # get block info    
+    @commands.command()
+    async def block_dnx(self, ctx, description = "get info about latest DNX block mined by pool, usage example: !block_dnx"):
+        
+        zet_dnx = ZET_DNX()
+        pool_blocks_data = zet_dnx.getBlocksData()
+        if pool_blocks_data != None:
+            latest_matured = pool_blocks_data['pool']
+            hash = (latest_matured['blocks'][0]).split(":", -1)[-6]
+            height = latest_matured['blocks'][1]
+            reward = float((latest_matured['blocks'][0]).split(":", -1)[-1]) / (10**9)
+            timestamp = int((latest_matured['blocks'][0]).split(":", -1)[-5])
+            dt_object = datetime.fromtimestamp(timestamp)
 
+            # create embed
+            embed_message = discord.Embed(title = f"LATEST BLOCK INFO", description = f"For DNX ZETpool", color = discord.Color.green(), url = f"https://zetpool.org/dnx/#pool_blocks")
+            embed_message.set_author(name = f"Requested by {ctx.author}", icon_url = ctx.author.avatar)
+            embed_message.set_thumbnail(url="https://s2.coinmarketcap.com/static/img/coins/64x64/22858.png")
+            embed_message.add_field(name = "Hash:", value = f"{hash}", inline = False) 
+            embed_message.add_field(name = "Height:", value = f"{height}", inline = True) 
+            embed_message.add_field(name = "Reward:", value = f"{reward} DNX", inline = True)
+            embed_message.set_footer(text = f"@{dt_object}") 
+            # send it
+            await ctx.channel.send(embed = embed_message)
 
     
     # # get payment info    
