@@ -58,7 +58,7 @@ conn.close()
    
 class ZET_ETC:
     def __init__(self):
-        self.api_url = 'https://etc.zet-tech.eu'
+        self.api_url = 'https://zetpool.org/etc/'
         self.headers = {
             'Accepts': 'application/json',
         }
